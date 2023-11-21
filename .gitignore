@@ -37,3 +37,8 @@ next-env.d.ts
 
 # firebase
 .firebase
+
+# terraform
+terraform.tfstate*
+.terraform.lock.hcl
+.terraform
