@@ -10,10 +10,15 @@
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 
+const GLOBAL_CONFIG = {
+  // NOTE(dabrady) Closest to `eur3`, where our data lives
+  region: "europe-west1",
+};
+
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 
-export const helloWorld = onRequest((request, response) => {
+export const helloWorld = onRequest(GLOBAL_CONFIG, (request, response) => {
   logger.info("Hello logs!", {structuredData: true});
   response.send("Hello from Firebase!");
 });
