@@ -3,6 +3,7 @@ import Image from 'next/image';
 import {
   Button,
   Chip,
+  ChipProps,
   Collapse,
   Stack,
   Table,
@@ -144,7 +145,7 @@ var States = {
   SHIPPED: 'shipped',
 };
 
-function MonoChip(props) {
+function MonoChip(props: ChipProps) {
   return <Chip sx={{ fontFamily: "monospace"}} {...props}/>;
 }
 var Chips = {
@@ -161,22 +162,22 @@ var Chips = {
 
 var Actions = {
   [States.READY]: [
-    <DeployButton />,
+    <DeployButton key={0} />,
   ],
   [States.NOT_READY]: [],
   [States.DEPLOYING]: [
-    <CancelButton />,
+    <CancelButton key={0} />,
   ],
   [States.ROLLING_BACK]: [],
   [States.NEEDS_QA]: [
-    <AcceptButton />,
-    <RejectButton />,
+    <AcceptButton key={0} />,
+    <RejectButton key={1} />,
   ],
   [States.REVERTED]: [],
   [States.FAILED]: [],
   [States.REJECTED]: [],
   [States.SHIPPED]: [
-    <RevertButton />,
+    <RevertButton key={0} />,
   ],
 };
 
