@@ -80,6 +80,7 @@ app.webhooks.on(
   [
     'pull_request.opened',
     'pull_request.reopened',
+    'pull_request.ready_for_review',
     'pull_request.closed',
     'pull_request.converted_to_draft',
     'pull_request.edited', // when title, body, or base branch is modified
@@ -100,10 +101,13 @@ app.webhooks.on(
       repository.default_branch,
     ];
 
+
     switch (payload.action) {
     case 'opened':
     case 'reopened':
-    case 'synchronize': // when head branch is updated
+    case 'ready_for_review':
+    // eslint-disable-next-line no-fallthrough
+    case 'synchronize': { // when head branch is updated
       // Ignore draft PRs.
       if (pullRequest.draft) {
         logger.info('Ignoring: PR is draft');
@@ -123,8 +127,10 @@ app.webhooks.on(
           throw err;
         });
       break;
+    }
 
-    case 'edited': // when title, body, or base branch is modified
+    // when title, body, or base branch is modified
+    case 'edited': {
       // Ignore draft PRs.
       if (pullRequest.draft) {
         logger.info('Ignoring: PR is draft');
@@ -148,15 +154,17 @@ app.webhooks.on(
           });
       }
       break;
+    }
 
-    case 'closed':
+    case 'closed': {
       // Ignore draft PRs.
       if (pullRequest.draft) {
         logger.info('Ignoring: PR is draft');
         break;
       }
-      // eslint-disable-next-line no-fallthrough
-    case 'converted_to_draft':
+    }
+    // eslint-disable-next-line no-fallthrough
+    case 'converted_to_draft': {
       disqualify(pullRequest)
         .then(function reportSuccess(docPath) {
           logger.info(`Pull request disqualified: ${docPath}`);
@@ -165,8 +173,12 @@ app.webhooks.on(
           throw err;
         });
       break;
+    }
 
-    default: break;
+    default: {
+      logger.warn(`Unhandlede pull_request action: ${payload.action}`);
+      break;
+    }
     }
 
     return; // NOTE(dabrady) I like to make it clear that nothing else should happen.
