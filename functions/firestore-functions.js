@@ -90,7 +90,7 @@ export async function registerPullRequest(pullRequest) {
           html_url: url,
           user: {
             login: userHandle, // NOTE this is their GitHub handle
-            url: userUrl, // NOTE userHandle is also last path segment of URL
+            html_url: userUrl, // NOTE userHandle is also last path segment of URL
           },
           head: {
             repo: {
@@ -105,6 +105,7 @@ export async function registerPullRequest(pullRequest) {
           pullRequestRef,
           {
             id,
+            componentId: componentRef.path.split('/').slice(-1),
             number,
             head: sha,
             url,
