@@ -1,0 +1,8 @@
+name: dummy workflow for testing
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: yarn install && yarn build
