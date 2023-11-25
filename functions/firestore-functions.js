@@ -93,9 +93,6 @@ export async function registerPullRequest(pullRequest) {
             html_url: userUrl, // NOTE userHandle is also last path segment of URL
           },
           head: {
-            repo: {
-              url: apiBaseUrl,
-            },
             sha,
           },
         } = pullRequest;
@@ -113,7 +110,10 @@ export async function registerPullRequest(pullRequest) {
               handle: userHandle,
               url: userUrl,
             },
-            apiBaseUrl,
+            repo: {
+              name: repo.name,
+              owner: repo.owner.login,
+            },
             timestamp: FieldValue.serverTimestamp(),
           },
           // Doc creation options

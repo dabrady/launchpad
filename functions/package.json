@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint --ext .js .",
-    "dev": "yarn lint && firebase emulators:start --only functions",
+    "dev": "yarn lint && firebase emulators:start --only functions,firestore",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",

@@ -8,6 +8,9 @@ import {
   disqualify,
   registerOrUpdate,
 } from './firestore-functions.js';
+import {
+  isDeployable as _isDeployable,
+} from './helpers.js';
 
 /**
  * NOTE(dabrady) Explicit use of `dotenv` needed for compile-time access to env files.
@@ -34,7 +37,7 @@ const app = new App({
   },
 });
 
-/** *** MAIN ENTRYPOINT *** **/
+/** *** MAIN FUNCTIONS *** **/
 /**
  * NOTE(dabrady) This assumes the caller is GitHub itself, and shouldn't need to
  * change unless the GitHub Webhook API changes: it simply pieces together a
@@ -63,6 +66,37 @@ export const handleGitHubWebhooks = onRequest(
   },
 );
 
+/**
+ * Given a `pull_request` document, determines whether it is deployable.
+ */
+export const isDeployable = onRequest(
+  function isDeployable(request, response) {
+    var {
+      number,
+      repo: {
+        owner,
+        name,
+      },
+    } = request.body;
+    app.octokit.request('GET /repos/{owner}/{name}/installation', { owner, name })
+      .then(function getAuthenticatedOctokit({ data: { id }}) {
+        return app.getInstallationOctokit(id);
+      })
+      .then(function checkIsDeployabe(octokit) {
+        return _isDeployable(octokit, {
+          number,
+          repo: {
+            owner,
+            name,
+          },
+        });
+      })
+      .then(function respond(judgment) {
+        return response.json(judgment);
+      });
+  },
+);
+
 /** *** WEBHOOK HANDLERS *** **/
 /** NOTE(dabrady) Here be handlers for specific webhook events. */
 
@@ -86,7 +120,7 @@ app.webhooks.on(
     'pull_request.edited', // when title, body, or base branch is modified
     'pull_request.synchronize', // when head branch is updated
   ],
-  async function handlePullRequestEvent({ /* octokit, */ payload }) {
+  async function handlePullRequestEvent({ octokit, payload }) {
     logger.info(
       // eslint-disable-next-line max-len
       `Received a pull_request → ${payload.action} event for ${payload.repository.name}`,
@@ -100,7 +134,6 @@ app.webhooks.on(
       // NOTE(brady) Our default branches are our production codebase.
       repository.default_branch,
     ];
-
 
     switch (payload.action) {
     case 'opened':
