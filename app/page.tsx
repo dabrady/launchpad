@@ -176,12 +176,19 @@ var MOCK_DATA = [
   },
 ];
 
+const DEPLOYABLE_COMPONENTS = [
+  'launchpad',
+  'insitu-app',
+];
+
 export default function Home() {
   return (
     <main className={styles.main}>
       <Stack spacing={10}>
         {/* TODO(dabrady) Add component filter */}
-        <EligiblePullRequests component={'launchpad'}/>
+        <EligiblePullRequests
+          components={DEPLOYABLE_COMPONENTS}
+        />
         <TableContainer>
           <Table>
             <TableHead>

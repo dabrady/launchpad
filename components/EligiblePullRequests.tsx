@@ -13,8 +13,10 @@ import {
 import { Actions, Chips, States } from '@/components/constants';
 import usePullRequests from '@/components/utils/usePullRequests';
 
-export default function EligiblePullRequests({ component }) {
-  var [pullRequests] = usePullRequests(component);
+export default function EligiblePullRequests({ components }) {
+  // TODO(dabrady) Make a component for owning the PRs of one component, then
+  // pre-render them all and provide a filter.
+  var [pullRequests] = usePullRequests(components[0]);
 
   return (
     <TableContainer>
