@@ -22,7 +22,6 @@ export default function EligiblePullRequests({ component }) {
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
-            <TableCell>Date</TableCell>
             <TableCell>Pull Request</TableCell>
             <TableCell>Author</TableCell>
           </TableRow>
@@ -30,7 +29,6 @@ export default function EligiblePullRequests({ component }) {
         <TableBody>
           {pullRequests.map(function renderItem(pullRequest, index) {
             var {
-              timestamp: { seconds: timestamp }, // TODO make this human readable
               componentId,
               number,
               url,
@@ -45,7 +43,6 @@ export default function EligiblePullRequests({ component }) {
                 <TableCell>
                   {Chips[state]}
                 </TableCell>
-                <TableCell>{new Date(timestamp * 1000).toISOString()}</TableCell>
                 <TableCell><a href={url}><code>{componentId} #{number}</code></a></TableCell>
                 <TableCell><a href={authorUrl}>{authorHandle}</a></TableCell>
                 <TableCell>
