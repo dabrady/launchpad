@@ -12,6 +12,8 @@ export async function isDeployable(
     query mergability($owner: String!, $name: String!, $number: Int!) {
       repository(owner: $owner, name: $name) {
         pullRequest(number: $number) {
+          closed
+          isDraft
           mergeable
           baseRef {
             branchProtectionRule {
@@ -48,6 +50,8 @@ export async function isDeployable(
     }).then(({
       repository: {
         pullRequest: {
+          closed,
+          isDraft,
           mergeable,
           baseRef: {
             branchProtectionRule,
@@ -64,6 +68,11 @@ export async function isDeployable(
         },
       },
     }) => {
+      // You cannot deploy a PR that is not open or real.
+      if (closed || isDraft) {
+        return false;
+      }
+
       var {
         requiresStatusChecks: statusChecksRequired,
         requiredStatusChecks = [],
