@@ -23,9 +23,10 @@ function subscribeToPullRequests(
 ): Unsubscribe {
   var unsubscribe = onSnapshot(
     query(collection(firestore, 'components', componentId, 'pull_requests')),
-    async (snapshot) => {
+    (snapshot) => {
       var pullRequests = snapshot.docs.map((d) => d.data());
       console.log('got prs:', pullRequests);
+
       callback(pullRequests);
     },
     (error) => {
@@ -38,9 +39,27 @@ function subscribeToPullRequests(
   return unsubscribe;
 };
 
+async function judgePullRequests(pullRequests) {
+  return Promise.all(pullRequests.map((pullRequest) => {
+    return fetch(
+      'https://ispullrequestdeployable-em2d3pfjyq-ew.a.run.app',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pullRequest),
+      },
+    )
+      .then((response) => response.json())
+      .then((deployable) => (deployable ? 'ready' : 'not ready'));
+  }));
+}
+
 export default function usePullRequests(
   componentId: string,
 ) {
+
   const [pullRequests, setPullRequests] = useState<object[]>([]);
 
   useEffect(() => {
@@ -49,25 +68,14 @@ export default function usePullRequests(
     const unsubscribe = subscribeToPullRequests(
       componentId,
       (eligiblePullRequests: object[]) => {
-        (async function getStatuses(prs) {
-          return Promise.all(prs.map(({ apiBaseUrl, head }) => {
-            return fetch(`${apiBaseUrl}/commits/${head}/status`)
-              .then((response) => response.json())
-              .then(({ state, total_count: totalCount }) => {
-                console.log('got status:', state, totalCount);
-                return (state == 'success' || totalCount == 0) ? 'ready' : 'not ready';
-              });
-          }));
-        })(eligiblePullRequests)
-          .then((states) => {
-            console.log('storing PRs', states);
+        judgePullRequests(eligiblePullRequests)
+          .then((judgments) => {
             setPullRequests(() => {
-              var newPulls = eligiblePullRequests.map((pr, index) => ({
+              return eligiblePullRequests.map((pr, index) => ({
                 ...pr,
-                state: states[index],
+                state: judgments[index],
               }));
-              console.log('updatidng stored pulls', newPulls);
-              return newPulls;  });
+            });
           });
       },
       {
