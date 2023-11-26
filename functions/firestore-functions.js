@@ -137,7 +137,7 @@ export async function registerPullRequest(pullRequest) {
  */
 export async function disqualify(pullRequest) {
   logger.info(
-    // eslint-disable-next-line max-len
+    // eslint-disable-next-line @stylistic/max-len
     `Disqualifying pull request: ${pullRequest.head.repo.name}#${pullRequest.number}`,
   );
 

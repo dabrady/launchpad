@@ -79,7 +79,7 @@ export const isDeployable = onRequest(
       },
     } = request.body;
     app.octokit.request('GET /repos/{owner}/{name}/installation', { owner, name })
-      .then(function getAuthenticatedOctokit({ data: { id }}) {
+      .then(function getAuthenticatedOctokit({ data: { id } }) {
         return app.getInstallationOctokit(id);
       })
       .then(function checkIsDeployabe(octokit) {
@@ -120,9 +120,9 @@ app.webhooks.on(
     'pull_request.edited', // when title, body, or base branch is modified
     'pull_request.synchronize', // when head branch is updated
   ],
-  async function handlePullRequestEvent({ octokit, payload }) {
+  async function handlePullRequestEvent({ payload }) {
     logger.info(
-      // eslint-disable-next-line max-len
+      // eslint-disable-next-line @stylistic/max-len
       `Received a pull_request → ${payload.action} event for ${payload.repository.name}`,
     );
 

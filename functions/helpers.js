@@ -8,12 +8,10 @@ export async function isDeployable(
     },
   },
 ) {
-  return octokit.graphql(`
-    query mergability($owner: String!, $name: String!, $number: Int!) {
+  return octokit.graphql(
+    `query deployability($owner: String!, $name: String!, $number: Int!) {
       repository(owner: $owner, name: $name) {
         pullRequest(number: $number) {
-          closed
-          isDraft
           mergeable
           baseRef {
             branchProtectionRule {
@@ -43,15 +41,16 @@ export async function isDeployable(
           }
         }
       }
-    }`, {
+    }`,
+    {
       owner,
       name,
       number,
-    }).then(({
+    },
+  ).then(
+    function checkDeployability({
       repository: {
         pullRequest: {
-          closed,
-          isDraft,
           mergeable,
           baseRef: {
             branchProtectionRule,
@@ -67,21 +66,16 @@ export async function isDeployable(
           },
         },
       },
-    }) => {
-      // You cannot deploy a PR that is not open or real.
-      if (closed || isDraft) {
-        return false;
-      }
-
+    }) {
       var {
         requiresStatusChecks: statusChecksRequired,
         requiredStatusChecks = [],
-      } = branchProtectionRule ?? {};
+      } = branchProtectionRule || {};
       var {
         contexts: {
           edges: allCheckRuns = [],
         } = {},
-      } = statusCheckRollup ?? {};
+      } = statusCheckRollup || {};
 
       /**
        * @see https://docs.github.com/en/graphql/reference/enums#mergeablestate
@@ -98,9 +92,10 @@ export async function isDeployable(
         ({ node: { name: check } }) => requiredStatusChecks.includes(check),
       );
       var requiredChecksPass = statusChecksRequired && requiredStatusChecks.length
-          ? requiredCheckRuns.every(({ node: { conclusion } }) => conclusion == 'SUCCESS')
-          : true ;
-
+        // eslint-disable-next-line @stylistic/max-len
+        ? requiredCheckRuns.every(({ node: { conclusion } }) => conclusion == 'SUCCESS')
+        : true;
       return canMergeCleanly && requiredChecksPass;
-    });
+    },
+  );
 }
