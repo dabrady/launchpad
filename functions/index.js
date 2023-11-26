@@ -69,8 +69,19 @@ export const handleGitHubWebhooks = onRequest(
 /**
  * Given a `pull_request` document, determines whether it is deployable.
  */
-export const isDeployable = onRequest(
+export const isPullRequestDeployable = onRequest(
+  {
+    // Allow requests from anywhere
+    // TODO(dabrady) Restrict this to our own domain
+    cors: true,
+  },
   function isDeployable(request, response) {
+    if (request.method == 'OPTIONS') {
+      logger.debug('Skipping OPTIONS requests');
+      response.status(204).send();
+      return;
+    }
+
     var {
       number,
       repo: {
