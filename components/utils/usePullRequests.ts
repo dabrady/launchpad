@@ -25,8 +25,6 @@ function subscribeToPullRequests(
     query(collection(firestore, 'components', componentId, 'pull_requests')),
     (snapshot) => {
       var pullRequests = snapshot.docs.map((d) => d.data());
-      console.log('got prs:', pullRequests);
-
       callback(pullRequests);
     },
     (error) => {
