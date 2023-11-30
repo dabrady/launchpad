@@ -77,7 +77,12 @@ export default function usePullRequests(components: string[]) {
 
                 // Step 4: Store and trigger a re-render.
                 setPullRequests((prev) => ({ ...prev, [component]: prs }));
-                setLoadedComponents((prev) => prev + 1);
+                setLoadedComponents((prev) => {
+                  if (prev < components.length) {
+                    return prev + 1;
+                  };
+                  return prev;
+                });
               },
             ).catch(
               function reportError(error) {
