@@ -44,7 +44,8 @@ async function judgePullRequests(pullRequests) {
 }
 
 export default function usePullRequests(components: string[]) {
-  const [pullRequests, setPullRequests] = useState<object>({});
+  const [pullRequests, setPullRequests] = useState({});
+  const [loadedComponents, setLoadedComponents] = useState(0);
 
   useEffect(() => {
     if (!components?.length) return;
@@ -76,6 +77,7 @@ export default function usePullRequests(components: string[]) {
 
                 // Step 4: Store and trigger a re-render.
                 setPullRequests((prev) => ({ ...prev, [component]: prs }));
+                setLoadedComponents((prev) => prev + 1);
               },
             ).catch(
               function reportError(error) {
@@ -94,12 +96,5 @@ export default function usePullRequests(components: string[]) {
     };
   }, [JSON.stringify(components)]);
 
-  return [
-    pullRequests,
-    // function updatePullRequests(data: UpdateData<object>) {
-    //   if (docRef?.current) {
-    //     updateDoc(docRef.current, data);
-    //   }
-    // }
-  ];
+  return [pullRequests, loadedComponents == components.length];
 };

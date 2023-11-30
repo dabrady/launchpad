@@ -1,5 +1,7 @@
 'use client';
 import {
+  Box,
+  CircularProgress,
   Stack,
   Table,
   TableBody,
@@ -16,7 +18,19 @@ import usePullRequests from '@/components/utils/usePullRequests';
 export default function EligiblePullRequests({ components }) {
   // TODO(dabrady) Make a component for owning the PRs of one component, then
   // pre-render them all and provide a filter.
-  var [pullRequests] = usePullRequests(components);
+  var [pullRequests, loaded] = usePullRequests(components);
+
+  if (!loaded) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <TableContainer>

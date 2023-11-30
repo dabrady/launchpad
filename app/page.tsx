@@ -1,8 +1,12 @@
+'use client';
+
+import { signInWithPopup } from "firebase/auth";
 import Image from 'next/image';
 import {
   Button,
   Chip,
   ChipProps,
+  CircularProgress,
   Collapse,
   Stack,
   Table,
@@ -18,6 +22,8 @@ import { useState } from 'react';
 
 import { Actions, Chips, States } from '@/components/constants';
 import EligiblePullRequests from '@/components/EligiblePullRequests';
+import useAuth from '@/components/utils/useAuth';
+import { auth, GoogleAuthProvider } from "@/firebase";
 
 import styles from './page.module.css';
 
@@ -182,6 +188,20 @@ const DEPLOYABLE_COMPONENTS = [
 ];
 
 export default function Home() {
+  var currentUser = useAuth({
+    onLogout: function login() {
+      signInWithPopup(auth, GoogleAuthProvider).then(() => console.log('signed in'));
+    },
+  });
+
+  if (!currentUser) {
+    return (
+      <main className={styles.main}>
+        <CircularProgress />
+      </main>
+    );
+  }
+
   return (
     <main className={styles.main}>
       <Stack spacing={10}>
