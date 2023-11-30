@@ -16,7 +16,7 @@ import usePullRequests from '@/components/utils/usePullRequests';
 export default function EligiblePullRequests({ components }) {
   // TODO(dabrady) Make a component for owning the PRs of one component, then
   // pre-render them all and provide a filter.
-  var [pullRequests] = usePullRequests(components[0]);
+  var [pullRequests] = usePullRequests(components);
 
   return (
     <TableContainer>
@@ -29,7 +29,7 @@ export default function EligiblePullRequests({ components }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {pullRequests.map(function renderItem(pullRequest, index) {
+          {Object.values(pullRequests).flat().map(function renderItem(pullRequest, index) {
             var {
               componentId,
               number,

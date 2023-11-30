@@ -6,39 +6,28 @@ import {
   query,
   where,
   FirestoreError,
+  QuerySnapshot,
   Unsubscribe,
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from "react";
 
 import { firestore } from '@/firebase';
 
-function subscribeToPullRequests(
-  componentId: string,
-  callback: (eligiblePullRequests: object[]) => void,
-  {
-    onSubscriptionFailure,
-  }: {
-    onSubscriptionFailure?: ((error: FirestoreError) => void);
-  } = {},
-): Unsubscribe {
-  var unsubscribe = onSnapshot(
+function subscribe(componentId, processNextSnapshot) {
+  return onSnapshot(
     query(collection(firestore, 'components', componentId, 'pull_requests')),
-    (snapshot) => {
+    function _processNextSnapshot(snapshot: QuerySnapshot) {
       var pullRequests = snapshot.docs.map((d) => d.data());
-      callback(pullRequests);
+      processNextSnapshot(pullRequests);
     },
-    (error) => {
-      if (onSubscriptionFailure) {
-        onSubscriptionFailure(error);
-      };
-    }
+    function _processSnapshotError(error: FirestoreError) {
+      throw error;
+    },
   );
-
-  return unsubscribe;
-};
+}
 
 async function judgePullRequests(pullRequests) {
-  return Promise.all(pullRequests.map((pullRequest) => {
+  return Promise.allSettled(pullRequests.map((pullRequest) => {
     return fetch(
       'https://ispullrequestdeployable-em2d3pfjyq-ew.a.run.app',
       {
@@ -54,39 +43,56 @@ async function judgePullRequests(pullRequests) {
   }));
 }
 
-export default function usePullRequests(
-  componentId: string,
-) {
-
-  const [pullRequests, setPullRequests] = useState<object[]>([]);
+export default function usePullRequests(components: string[]) {
+  const [pullRequests, setPullRequests] = useState<object>({});
 
   useEffect(() => {
-    if (!componentId) return;
+    if (!components?.length) return;
 
-    const unsubscribe = subscribeToPullRequests(
-      componentId,
-      (eligiblePullRequests: object[]) => {
-        judgePullRequests(eligiblePullRequests)
-          .then((judgments) => {
-            setPullRequests(() => {
-              return eligiblePullRequests.map((pr, index) => ({
-                ...pr,
-                state: judgments[index],
-              }));
-            });
-          });
-      },
-      {
-        onSubscriptionFailure: (error) => {
-          console.error("Error subscribing to pull requests:", error);
-        }
+    /**
+     * Okay, so this lovely bit of sequential asynchrony needs a lovely bit of explaining.
+     *
+     * In effect, it issues subscriptions to the pull requests of each given component,
+     * such that subscription events result in updates to our local state.
+     */
+    var unsubscribers = new Set();
+    for (let component of components) {
+      // Step 1: Subscribe to the component's pull requests.
+      let unsubscribe = subscribe(
+        component,
+        function judgeEm(eligiblePullRequests) {
+          // Step 2: Check the deployability of each pull request.
+          judgePullRequests(eligiblePullRequests)
+            .then(
+              // Step 3: Tag the PR with its deployability.
+              function injectJudgments(judgments) {
+                var prs = [];
+                for (var [index, pr] of eligiblePullRequests.entries()) {
+                  prs.push({
+                    ...pr,
+                    state: judgments[index].value,
+                  });
+                }
+
+                // Step 4: Store and trigger a re-render.
+                setPullRequests((prev) => ({ ...prev, [component]: prs }));
+              },
+            ).catch(
+              function reportError(error) {
+                console.error("Error judging pull requests:", error);
+              },
+            );
+        },
+      );
+      unsubscribers.add(unsubscribe);
+    }
+
+    return function unsubscribeAll() {
+      for (var unsubscribe of unsubscribers) {
+        unsubscribe();
       }
-    );
-    return unsubscribe;
-  }, [componentId]);
-
-  useEffect(function() {
-  }, [pullRequests]);
+    };
+  }, [JSON.stringify(components)]);
 
   return [
     pullRequests,
