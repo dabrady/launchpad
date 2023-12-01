@@ -47,6 +47,7 @@ export default function EligiblePullRequests({ components }) {
             var {
               componentId,
               number,
+              title,
               url,
               state,
               author: {
@@ -59,7 +60,13 @@ export default function EligiblePullRequests({ components }) {
                 <TableCell>
                   {Chips[state]}
                 </TableCell>
-                <TableCell><a href={url}><code>{componentId} #{number}</code></a></TableCell>
+                <TableCell>
+                  <a href={url}>
+                    <code>{componentId} #{number}</code>
+                    <br/>
+                    {title}
+                  </a>
+                </TableCell>
                 <TableCell><a href={authorUrl}>{authorHandle}</a></TableCell>
                 <TableCell>
                   <Stack spacing={1} direction="row">

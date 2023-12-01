@@ -87,6 +87,7 @@ export async function registerPullRequest(pullRequest) {
         var {
           id,
           number,
+          title,
           html_url: url,
           user: {
             login: userHandle, // NOTE this is their GitHub handle
@@ -104,6 +105,7 @@ export async function registerPullRequest(pullRequest) {
             id,
             componentId: componentRef.path.split('/').slice(-1),
             number,
+            title,
             head: sha,
             url,
             author: {
