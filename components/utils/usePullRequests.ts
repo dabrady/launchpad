@@ -23,6 +23,7 @@ function subscribe(
     query(
       collection(firestore, 'components', componentId, 'pull_requests'),
       where('target', '==', targetEnv),
+      where('enqueued', '==', false),
     ),
     function _processNextSnapshot(snapshot: QuerySnapshot) {
       var pullRequests = snapshot.docs.map((d) => d.data() as RawPullRequest);
