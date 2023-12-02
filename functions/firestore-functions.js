@@ -96,6 +96,9 @@ export async function registerPullRequest(pullRequest) {
           head: {
             sha,
           },
+          base: {
+            ref,
+          },
         } = pullRequest;
 
         // NOTE(dabrady) Using `set` instead of `create` to perform a 'create or replace' operation.
@@ -107,6 +110,7 @@ export async function registerPullRequest(pullRequest) {
             number,
             title,
             head: sha,
+            target: ref,
             url,
             author: {
               handle: userHandle,
@@ -160,7 +164,11 @@ export async function disqualify(pullRequest) {
  * @return {Promise<string>} - The path to the updated PR doc in Firestore
  */
 export async function updatePullRequest(pullRequest) {
-  var { head: { repo, sha } } = pullRequest;
+  var {
+    head: { repo, sha },
+    base: { ref },
+    title,
+  } = pullRequest;
   logger.info(
     `Updating eligible pull request: ${repo.name}#${pullRequest.number}`,
   );
@@ -169,6 +177,9 @@ export async function updatePullRequest(pullRequest) {
   return firestore.doc(targetDocPath)
     .update({
       head: sha,
+      target: ref,
+      title,
+      timestamp: FieldValue.serverTimestamp(),
     })
     .then(function returnDocPath() {
       return targetDocPath;

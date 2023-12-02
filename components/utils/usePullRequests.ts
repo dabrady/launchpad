@@ -11,11 +11,24 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from "react";
 
+import { Environment } from '@/components/constants';
 import { firestore } from '@/firebase';
 
-function subscribe(componentId, processNextSnapshot) {
+function subscribe(
+  componentId: string,
+  targetEnv: Environment,
+  processNextSnapshot: (_: QuerySnapshot) => void,
+) {
+  // TODO(dabrady) This godly knowledge doesn't belong here, but at least
+  // it'll be easy to sus out in the future when a repo doesn't use the same
+  // name for its production branch as the rest of our components.
+  var target = targetEnv == Environment.PRODUCTION ? 'main' : targetEnv;
+
   return onSnapshot(
-    query(collection(firestore, 'components', componentId, 'pull_requests')),
+    query(
+      collection(firestore, 'components', componentId, 'pull_requests'),
+      where('target', '==', target),
+    ),
     function _processNextSnapshot(snapshot: QuerySnapshot) {
       var pullRequests = snapshot.docs.map((d) => d.data());
       processNextSnapshot(pullRequests);
@@ -43,7 +56,7 @@ async function judgePullRequests(pullRequests) {
   }));
 }
 
-export default function usePullRequests(components: string[]) {
+export default function usePullRequests(components: string[], targetEnv: Environment) {
   const [pullRequests, setPullRequests] = useState({});
   const [loadedComponents, setLoadedComponents] = useState(0);
 
@@ -61,6 +74,7 @@ export default function usePullRequests(components: string[]) {
       // Step 1: Subscribe to the component's pull requests.
       let unsubscribe = subscribe(
         component,
+        targetEnv,
         function judgeEm(eligiblePullRequests) {
           // Step 2: Check the deployability of each pull request.
           judgePullRequests(eligiblePullRequests)
@@ -99,7 +113,14 @@ export default function usePullRequests(components: string[]) {
         unsubscribe();
       }
     };
-  }, [JSON.stringify(components)]);
+  }, [targetEnv, JSON.stringify(components)]);
+
+  // NOTE(dabrady) It's important to clear the cache immediately when the target
+  // environment changes, to avoid a stale UX.
+  useEffect(function clearCacheOnEnvChange() {
+    setPullRequests({});
+    setLoadedComponents(0);
+  }, [targetEnv]);
 
   return [pullRequests, loadedComponents == components.length];
 };

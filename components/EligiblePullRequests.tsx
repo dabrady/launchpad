@@ -12,13 +12,15 @@ import {
   TableRow,
 } from '@mui/material';
 
-import { Actions, Chips, States } from '@/components/constants';
+import { Chips, States } from '@/components/constants';
+import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import usePullRequests from '@/components/utils/usePullRequests';
 
-export default function EligiblePullRequests({ components }) {
+export default function EligiblePullRequests({ components, actions }) {
+  var { targetEnv } = useTargetEnvironment();
   // TODO(dabrady) Make a component for owning the PRs of one component, then
   // pre-render them all and provide a filter.
-  var [pullRequests, loaded] = usePullRequests(components);
+  var [pullRequests, loaded] = usePullRequests(components, targetEnv);
 
   if (!loaded) {
     return (
@@ -70,7 +72,7 @@ export default function EligiblePullRequests({ components }) {
                 <TableCell><a href={authorUrl}>{authorHandle}</a></TableCell>
                 <TableCell>
                   <Stack spacing={1} direction="row">
-                    {...Actions[state]}
+                    {...actions[state]}
                   </Stack>
                 </TableCell>
               </TableRow>

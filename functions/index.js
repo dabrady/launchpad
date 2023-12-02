@@ -139,9 +139,7 @@ app.webhooks.on(
 
     var { pull_request: pullRequest, repository } = payload;
     var deployableBranches = [
-      // TODO(dabrady) Support deploying to staging.
-      // 'staging',
-
+      'staging',
       // NOTE(brady) Our default branches are our production codebase.
       repository.default_branch,
     ];

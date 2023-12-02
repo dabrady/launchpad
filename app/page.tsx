@@ -20,67 +20,71 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 
-import { Actions, Chips, States } from '@/components/constants';
+import {
+  AcceptButton,
+  CancelButton,
+  DeployButton,
+  RejectButton,
+  RevertButton,
+} from '@/components/action-buttons';
+import { Chips, Environment, States } from '@/components/constants';
 import EligiblePullRequests from '@/components/EligiblePullRequests';
+import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import useAuth from '@/components/utils/useAuth';
+
 import { auth, GoogleAuthProvider } from "@/firebase";
 
 import styles from './page.module.css';
 
 var MOCK_DATA = [
   {
-    state: States.READY,
-    date: Date.now(),
-    repo: 'dossier-ui',
-    author: 'dabrady'
-  },
-  {
-    state: States.NOT_READY,
-    date: Date.now(),
-    repo: 'dossier-ai',
-    author: 'dabrady'
-  },
-  {
     state: States.DEPLOYING,
     date: Date.now(),
     repo: 'dossier-ai',
-    author: 'dabrady'
+    author: 'dabrady',
+    target: Environment.STAGING,
   },
   {
     state: States.FAILED,
     date: Date.now(),
     repo: 'dossier-ai',
-    author: 'dabrady'
+    author: 'dabrady',
+    target: Environment.STAGING,
   },
   {
     state: States.SHIPPED,
     date: Date.now(),
     repo: 'dossier-ai',
-    author: 'dabrady'
+    author: 'dabrady',
+    target: Environment.STAGING,
   },
   {
     state: States.REVERTED,
     date: Date.now(),
     repo: 'dossier-ai',
-    author: 'dabrady'
+    author: 'dabrady',
+    target: Environment.PRODUCTION,
   },
   {
     state: States.NEEDS_QA,
     date: Date.now(),
     repo: 'dossier-ai',
-    author: 'dabrady'
+    author: 'dabrady',
+    target: Environment.STAGING,
   },
   {
     state: States.ROLLING_BACK,
     date: Date.now(),
     repo: 'dossier-ai',
-    author: 'dabrady'
+    author: 'dabrady',
+    target: Environment.STAGING,
   },
   {
     state: States.REJECTED,
     date: Date.now(),
     repo: 'dossier-ai',
-    author: 'dabrady'
+    author: 'dabrady',
+    target: Environment.PRODUCTION,
   },
 ];
 
@@ -89,7 +93,29 @@ const DEPLOYABLE_COMPONENTS = [
   'insitu-app',
 ];
 
+const Actions = {
+  [States.READY]: [
+    <DeployButton key={0} />,
+  ],
+  [States.NOT_READY]: [],
+  [States.DEPLOYING]: [
+    <CancelButton key={0} />,
+  ],
+  [States.ROLLING_BACK]: [],
+  [States.NEEDS_QA]: [
+    <AcceptButton key={0} />,
+    <RejectButton key={1} />,
+  ],
+  [States.REVERTED]: [],
+  [States.FAILED]: [],
+  [States.REJECTED]: [],
+  [States.SHIPPED]: [
+    <RevertButton key={0} />,
+  ],
+};
+
 export default function Home() {
+  var { targetEnv } = useTargetEnvironment();
   var currentUser = useAuth({
     onLogout: function login() {
       signInWithPopup(auth, GoogleAuthProvider).then(() => console.log('signed in'));
@@ -110,6 +136,7 @@ export default function Home() {
         {/* TODO(dabrady) Add component filter */}
         <EligiblePullRequests
           components={DEPLOYABLE_COMPONENTS}
+          actions={Actions}
         />
         <TableContainer>
           <Table>
@@ -122,8 +149,8 @@ export default function Home() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {MOCK_DATA.filter(function({ state }) {
-                return ![States.READY, States.NOT_READY].includes(state);
+              {MOCK_DATA.filter(function({ target }) {
+                return target != targetEnv;
               }).map(function renderItem({ state, date, repo, author }, index) {
                 return (
                   <TableRow key={index}>
