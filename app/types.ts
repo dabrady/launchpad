@@ -22,7 +22,7 @@ export enum DeploymentState {
   SHIPPED = 'shipped',
 };
 
-export type PullRequest = {
+export type RawPullRequest = {
   id: string;
   componentId: string;
   number: number;
@@ -39,7 +39,12 @@ export type PullRequest = {
     owner: string;
   };
   timestamp: string;
-  state: PullRequestState;
+
+  /** Whether or not this PR is currently involved in a deployment. */
+  enqueued: boolean;
 };
+
 // NOTE(dabrady) Some data is injected by the client, not stored in the DB.
-export type RawPullRequest = Omit<PullRequest, 'state'>;
+export type PullRequest = RawPullRequest & {
+  state: PullRequestState;
+}

@@ -121,6 +121,8 @@ export async function registerPullRequest(pullRequest) {
               owner: repo.owner.login,
             },
             timestamp: FieldValue.serverTimestamp(),
+            // Indicate this PR is not currently involved in a deployment
+            enqueued: false,
           },
           // Doc creation options
           {
