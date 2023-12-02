@@ -106,7 +106,7 @@ export async function registerPullRequest(pullRequest) {
           pullRequestRef,
           {
             id,
-            componentId: componentRef.path.split('/').slice(-1),
+            componentId: componentRef.path.split('/').slice(-1).pop(),
             number,
             title,
             head: sha,
