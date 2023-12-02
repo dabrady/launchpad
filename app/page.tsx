@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 
+import { Environment, State } from '@/app/types';
 import {
   AcceptButton,
   CancelButton,
@@ -27,7 +28,7 @@ import {
   RejectButton,
   RevertButton,
 } from '@/components/action-buttons';
-import { Chips, Environment, States } from '@/components/constants';
+import { Chips } from '@/components/constants';
 import EligiblePullRequests from '@/components/EligiblePullRequests';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import useAuth from '@/components/utils/useAuth';
@@ -38,49 +39,49 @@ import styles from './page.module.css';
 
 var MOCK_DATA = [
   {
-    state: States.DEPLOYING,
+    state: State.DEPLOYING,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: States.FAILED,
+    state: State.FAILED,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: States.SHIPPED,
+    state: State.SHIPPED,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: States.REVERTED,
+    state: State.REVERTED,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.PRODUCTION,
   },
   {
-    state: States.NEEDS_QA,
+    state: State.NEEDS_QA,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: States.ROLLING_BACK,
+    state: State.ROLLING_BACK,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: States.REJECTED,
+    state: State.REJECTED,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
@@ -94,22 +95,22 @@ const DEPLOYABLE_COMPONENTS = [
 ];
 
 const Actions = {
-  [States.READY]: [
+  [State.READY]: [
     <DeployButton key={0} />,
   ],
-  [States.NOT_READY]: [],
-  [States.DEPLOYING]: [
+  [State.NOT_READY]: [],
+  [State.DEPLOYING]: [
     <CancelButton key={0} />,
   ],
-  [States.ROLLING_BACK]: [],
-  [States.NEEDS_QA]: [
+  [State.ROLLING_BACK]: [],
+  [State.NEEDS_QA]: [
     <AcceptButton key={0} />,
     <RejectButton key={1} />,
   ],
-  [States.REVERTED]: [],
-  [States.FAILED]: [],
-  [States.REJECTED]: [],
-  [States.SHIPPED]: [
+  [State.REVERTED]: [],
+  [State.FAILED]: [],
+  [State.REJECTED]: [],
+  [State.SHIPPED]: [
     <RevertButton key={0} />,
   ],
 };

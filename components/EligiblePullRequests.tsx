@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@mui/material';
 
-import { Chips, States } from '@/components/constants';
+import { Chips } from '@/components/constants';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import usePullRequests from '@/components/utils/usePullRequests';
 

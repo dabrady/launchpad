@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from "react";
 
-import { Environment } from '@/components/constants';
+import { Environment } from '@/app/types';
 import { firestore } from '@/firebase';
 
 function subscribe(
