@@ -22,7 +22,7 @@ export function useTargetEnvironment() {
   return useContext(TargetEnvironmentContext);
 }
 
-export function TargetEnvironmentProvider({ children }) {
+export function TargetEnvironmentProvider({ children }: { children: React.ReactNode }) {
   var [targetEnv, setTargetEnv] = useState(Environment.STAGING);
   return (
     <TargetEnvironmentContext.Provider value={{
@@ -58,21 +58,23 @@ export function TargetEnvironment() {
         onClick={openMenu}
         startIcon={<KeyboardArrowDownIcon />}
       >
-        <Typography>{targetEnv}</Typography>
+        <Typography>
+          {Object.keys(Environment)[Object.values(Environment).indexOf(targetEnv)]}
+        </Typography>
       </Button>
       <Menu
         open={open}
         anchorEl={menuAnchor}
         onClose={closeMenu}
       >
-        {members(Environment).map(function render(env) {
+        {members(Environment).map(function render(displayName) {
           return (
             <MenuItem
-              key={env}
-              selected={targetEnv == Environment[env] }
-              onClick={() => setTargetEnv(Environment[env])}
+              key={displayName}
+              selected={targetEnv == Environment[displayName]}
+              onClick={() => setTargetEnv(Environment[displayName])}
             >
-              {env}
+              {displayName}
             </MenuItem>
           );
         })}

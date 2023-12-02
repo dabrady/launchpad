@@ -5,7 +5,6 @@ import Image from 'next/image';
 import {
   Button,
   Chip,
-  ChipProps,
   CircularProgress,
   Collapse,
   Stack,
@@ -20,7 +19,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 
-import { Environment, State } from '@/app/types';
+import { Environment, DeploymentState, PullRequestState } from '@/app/types';
 import {
   AcceptButton,
   CancelButton,
@@ -39,49 +38,49 @@ import styles from './page.module.css';
 
 var MOCK_DATA = [
   {
-    state: State.DEPLOYING,
+    state: DeploymentState.DEPLOYING,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: State.FAILED,
+    state: DeploymentState.FAILED,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: State.SHIPPED,
+    state: DeploymentState.SHIPPED,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: State.REVERTED,
+    state: DeploymentState.REVERTED,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.PRODUCTION,
   },
   {
-    state: State.NEEDS_QA,
+    state: DeploymentState.NEEDS_QA,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: State.ROLLING_BACK,
+    state: DeploymentState.ROLLING_BACK,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
     target: Environment.STAGING,
   },
   {
-    state: State.REJECTED,
+    state: DeploymentState.REJECTED,
     date: Date.now(),
     repo: 'dossier-ai',
     author: 'dabrady',
@@ -94,23 +93,27 @@ const DEPLOYABLE_COMPONENTS = [
   'insitu-app',
 ];
 
+// TODO this needs to be represented better.
 const Actions = {
-  [State.READY]: [
+  // Pull requests
+  [PullRequestState.READY]: [
     <DeployButton key={0} />,
   ],
-  [State.NOT_READY]: [],
-  [State.DEPLOYING]: [
+  [PullRequestState.NOT_READY]: [],
+
+  // Deployments
+  [DeploymentState.DEPLOYING]: [
     <CancelButton key={0} />,
   ],
-  [State.ROLLING_BACK]: [],
-  [State.NEEDS_QA]: [
+  [DeploymentState.ROLLING_BACK]: [],
+  [DeploymentState.NEEDS_QA]: [
     <AcceptButton key={0} />,
     <RejectButton key={1} />,
   ],
-  [State.REVERTED]: [],
-  [State.FAILED]: [],
-  [State.REJECTED]: [],
-  [State.SHIPPED]: [
+  [DeploymentState.REVERTED]: [],
+  [DeploymentState.FAILED]: [],
+  [DeploymentState.REJECTED]: [],
+  [DeploymentState.SHIPPED]: [
     <RevertButton key={0} />,
   ],
 };
@@ -153,6 +156,7 @@ export default function Home() {
               {MOCK_DATA.filter(function({ target }) {
                 return target != targetEnv;
               }).map(function renderItem({ state, date, repo, author }, index) {
+                var actions = Actions[state] ?? [];
                 return (
                   <TableRow key={index}>
                     <TableCell>
@@ -163,7 +167,7 @@ export default function Home() {
                     <TableCell><a href="#">{author}</a></TableCell>
                     <TableCell>
                       <Stack spacing={1} direction="row">
-                        {...Actions[state]}
+                        {actions}
                       </Stack>
                     </TableCell>
                   </TableRow>

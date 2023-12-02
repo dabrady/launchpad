@@ -11,26 +11,21 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from "react";
 
-import { Environment } from '@/app/types';
+import { Environment, RawPullRequest, PullRequest, PullRequestState } from '@/app/types';
 import { firestore } from '@/firebase';
 
 function subscribe(
   componentId: string,
   targetEnv: Environment,
-  processNextSnapshot: (_: QuerySnapshot) => void,
+  processNextSnapshot: (_: RawPullRequest[]) => void,
 ) {
-  // TODO(dabrady) This godly knowledge doesn't belong here, but at least
-  // it'll be easy to sus out in the future when a repo doesn't use the same
-  // name for its production branch as the rest of our components.
-  var target = targetEnv == Environment.PRODUCTION ? 'main' : targetEnv;
-
   return onSnapshot(
     query(
       collection(firestore, 'components', componentId, 'pull_requests'),
-      where('target', '==', target),
+      where('target', '==', targetEnv),
     ),
     function _processNextSnapshot(snapshot: QuerySnapshot) {
-      var pullRequests = snapshot.docs.map((d) => d.data());
+      var pullRequests = snapshot.docs.map((d) => d.data() as RawPullRequest);
       processNextSnapshot(pullRequests);
     },
     function _processSnapshotError(error: FirestoreError) {
@@ -39,7 +34,9 @@ function subscribe(
   );
 }
 
-async function judgePullRequests(pullRequests) {
+async function judgePullRequests(
+  pullRequests: RawPullRequest[],
+): Promise<PromiseSettledResult<PullRequestState>[]> {
   return Promise.allSettled(pullRequests.map((pullRequest) => {
     return fetch(
       'https://ispullrequestdeployable-em2d3pfjyq-ew.a.run.app',
@@ -52,12 +49,14 @@ async function judgePullRequests(pullRequests) {
       },
     )
       .then((response) => response.json())
-      .then((deployable) => (deployable ? 'ready' : 'not ready'));
+      .then((deployable) => (
+        deployable ? PullRequestState.READY : PullRequestState.NOT_READY
+      ));
   }));
 }
 
 export default function usePullRequests(components: string[], targetEnv: Environment) {
-  const [pullRequests, setPullRequests] = useState({});
+  const [pullRequests, setPullRequests] = useState<{ [key: string]: PullRequest[] }>({});
   const [loadedComponents, setLoadedComponents] = useState(0);
 
   useEffect(() => {
@@ -69,24 +68,30 @@ export default function usePullRequests(components: string[], targetEnv: Environ
      * In effect, it issues subscriptions to the pull requests of each given component,
      * such that subscription events result in updates to our local state.
      */
-    var unsubscribers = new Set();
+    var unsubscribers = new Set<() => void>();
     for (let component of components) {
       // Step 1: Subscribe to the component's pull requests.
       let unsubscribe = subscribe(
         component,
         targetEnv,
-        function judgeEm(eligiblePullRequests) {
+        function judgeEm(eligiblePullRequests: RawPullRequest[]) {
           // Step 2: Check the deployability of each pull request.
           judgePullRequests(eligiblePullRequests)
             .then(
               // Step 3: Tag the PR with its deployability.
-              function injectJudgments(judgments) {
-                var prs = [];
+              function injectJudgments(judgments: PromiseSettledResult<PullRequestState>[]) {
+                var prs: PullRequest[] = [];
                 for (var [index, pr] of eligiblePullRequests.entries()) {
+                  var judgment = judgments[index];
+                  if (!('value' in judgment)) {
+                    console.error(`Error judging pull request '${pr.id}': ${judgment.reason}`);
+                    continue;
+                  }
+
                   prs.push({
                     ...pr,
-                    state: judgments[index].value,
-                  });
+                    state: judgment.value,
+                  } as PullRequest);
                 }
 
                 // Step 4: Store and trigger a re-render.

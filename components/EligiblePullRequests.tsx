@@ -12,11 +12,16 @@ import {
   TableRow,
 } from '@mui/material';
 
+import { PullRequest, PullRequestState } from '@/app/types';
 import { Chips } from '@/components/constants';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import usePullRequests from '@/components/utils/usePullRequests';
 
-export default function EligiblePullRequests({ components, actions }) {
+interface Props {
+  components: string[];
+  actions: { [key in PullRequestState]: React.ReactNode[] };
+}
+export default function EligiblePullRequests({ components, actions }: Props) {
   var { targetEnv } = useTargetEnvironment();
   // TODO(dabrady) Make a component for owning the PRs of one component, then
   // pre-render them all and provide a filter.
@@ -45,39 +50,45 @@ export default function EligiblePullRequests({ components, actions }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {Object.values(pullRequests).flat().map(function renderItem(pullRequest, index) {
-            var {
-              componentId,
-              number,
-              title,
-              url,
-              state,
-              author: {
-                handle: authorHandle,
-                url: authorUrl,
+          {Object
+            .values(pullRequests)
+            .flat()
+            .map(
+              function renderItem(pullRequest: PullRequest, index) {
+                var {
+                  componentId,
+                  number,
+                  title,
+                  url,
+                  state,
+                  author: {
+                    handle: authorHandle,
+                    url: authorUrl,
+                  },
+                } = pullRequest;
+                return (
+                  <TableRow key={index}>
+                    <TableCell>
+                      {Chips[state]}
+                    </TableCell>
+                    <TableCell>
+                      <a href={url}>
+                        <code>{componentId} #{number}</code>
+                        <br/>
+                        {title}
+                      </a>
+                    </TableCell>
+                    <TableCell><a href={authorUrl}>{authorHandle}</a></TableCell>
+                    <TableCell>
+                      <Stack spacing={1} direction="row">
+                        {...actions[state]}
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                );
               },
-            } = pullRequest;
-            return (
-              <TableRow key={index}>
-                <TableCell>
-                  {Chips[state]}
-                </TableCell>
-                <TableCell>
-                  <a href={url}>
-                    <code>{componentId} #{number}</code>
-                    <br/>
-                    {title}
-                  </a>
-                </TableCell>
-                <TableCell><a href={authorUrl}>{authorHandle}</a></TableCell>
-                <TableCell>
-                  <Stack spacing={1} direction="row">
-                    {...actions[state]}
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+            )
+          }
         </TableBody>
         <TableFooter></TableFooter>
       </Table>
