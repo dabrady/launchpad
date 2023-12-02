@@ -11,7 +11,7 @@ import {
 import { createContext, useContext, useState } from "react";
 
 import { Environment } from '@/app/types';
-import { members } from '@/components/utils/typescript';
+import { members, labelOf } from '@/components/utils/typescript';
 
 export const TargetEnvironmentContext = createContext({
   targetEnv: Environment.STAGING,
@@ -59,7 +59,7 @@ export function TargetEnvironment() {
         startIcon={<KeyboardArrowDownIcon />}
       >
         <Typography>
-          {Object.keys(Environment)[Object.values(Environment).indexOf(targetEnv)]}
+          {labelOf(targetEnv, Environment)}
         </Typography>
       </Button>
       <Menu

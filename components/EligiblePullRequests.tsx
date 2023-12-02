@@ -81,7 +81,7 @@ export default function EligiblePullRequests({ components, actions }: Props) {
                     <TableCell><a href={authorUrl}>{authorHandle}</a></TableCell>
                     <TableCell>
                       <Stack spacing={1} direction="row">
-                        {...actions[state]}
+                        {...actions[state](pullRequest)}
                       </Stack>
                     </TableCell>
                   </TableRow>

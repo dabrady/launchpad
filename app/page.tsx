@@ -19,7 +19,12 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 
-import { Environment, DeploymentState, PullRequestState } from '@/app/types';
+import {
+  Environment,
+  DeploymentState,
+  PullRequest,
+  PullRequestState,
+} from '@/app/types';
 import {
   AcceptButton,
   CancelButton,
@@ -96,9 +101,9 @@ const DEPLOYABLE_COMPONENTS = [
 // TODO this needs to be represented better.
 const Actions = {
   // Pull requests
-  [PullRequestState.READY]: [
-    <DeployButton key={0} />,
-  ],
+  [PullRequestState.READY]: (pullRequest: PullRequest) => ([
+    <DeployButton key={0} pullRequest={pullRequest} />,
+  ]),
   [PullRequestState.NOT_READY]: [],
 
   // Deployments
