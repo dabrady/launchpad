@@ -38,10 +38,11 @@ function subscribe(
   );
 }
 
-async function judgePullRequests(
-  pullRequests: RawPullRequest[],
+export async function judgePullRequests(
+  pullRequests: PullRequest[],
 ): Promise<PromiseSettledResult<PullRequestState>[]> {
   return Promise.allSettled(pullRequests.map((pullRequest) => {
+    var { number, repo } = pullRequest;
     return fetch(
       'https://ispullrequestdeployable-em2d3pfjyq-ew.a.run.app',
       {
@@ -49,7 +50,7 @@ async function judgePullRequests(
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(pullRequest),
+        body: JSON.stringify({ number, repo }),
       },
     )
       .then((response) => response.json())

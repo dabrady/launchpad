@@ -12,11 +12,11 @@ import {
 
 import { useState } from 'react';
 
-import { Environment } from '@/app/types'
+import { Environment, PullRequestState } from '@/app/types'
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import { labelOf } from '@/components/utils/typescript';
 import { createDeployment } from '@/components/utils/useDeployments';
-import { updatePullRequest } from '@/components/utils/usePullRequests';
+import { judgePullRequests, updatePullRequest } from '@/components/utils/usePullRequests';
 import { auth } from "@/firebase";
 
 export function DeployButton({ pullRequest }) {
@@ -24,7 +24,15 @@ export function DeployButton({ pullRequest }) {
   var disabled = !owner; // NOTE(dabrady) Should not be possible, just being safe.
   var { targetEnv } = useTargetEnvironment();
   var [openDialog, setOpenDialog] = useState(false);
+  var [checkingReadiness, setCheckingReadiness] = useState(false);
   var [enqueuingDeployment, setEnqueingDeployment] = useState(false);
+  var loading = checkingReadiness || enqueuingDeployment;
+  var doItText = 'Do the thing';
+  if (checkingReadiness) {
+    doItText = 'Checking PR…';
+  } else if (enqueuingDeployment) {
+    doItText = 'Enqueuing Deployment…';
+  }
 
   var {
     id,
@@ -49,7 +57,7 @@ export function DeployButton({ pullRequest }) {
 
       <Dialog
         open={openDialog}
-        onClose={enqueuingDeployment ? undefined : () => setOpenDialog(false)}
+        onClose={loading ? undefined : () => setOpenDialog(false)}
         maxWidth='xs'
         fullWidth={true}
         // NOTE(dabrady) This positions the modal slightly off-center, vertically speaking.
@@ -83,34 +91,59 @@ export function DeployButton({ pullRequest }) {
         <DialogContent>{title}</DialogContent>
 
         <DialogActions>
-          <Button
-            autoFocus
-            disabled={enqueuingDeployment}
-            onClick={() => setOpenDialog(false)}
-          >
-            Cancel
-          </Button>
+          {!loading && (
+            <Button
+              autoFocus
+              onClick={() => setOpenDialog(false)}
+            >
+              Cancel
+            </Button>
+          )}
           <LoadingButton
-            loading={enqueuingDeployment}
+            loading={loading}
             loadingPosition='end'
             endIcon={<RocketLaunchIcon />}
             color='warning'
             onClick={function beginDeployment() {
-              setEnqueingDeployment(true);
-              createDeployment(componentId, owner, id)
-                .then(function closeDialog() {
-                  setOpenDialog(false);
-                }).then(function markPullRequestAsEnqueued() {
-                  updatePullRequest(pullRequest, { enqueued: true });
-                }).catch(function reportEnqueuingError(error) {
-                  // TODO(dabrady) Surface this better.
-                  console.error(`Failed to enqueue PR for deployment: ${error}`);
-                }).finally(function cleanup() {
-                  setEnqueingDeployment(false);
-                });
+              // NOTE(dabrady) Before enqueuing, we need to do a last-minute readiness check
+              // to ensure the PR's deployability hasn't changed since we last judged it.
+              setCheckingReadiness(true);
+              judgePullRequests([pullRequest])
+                .then(
+                  function abortOrProceed(judgments: PromiseSettledResult<PullRequestState>[]) {
+                    var judgment = judgments[0];
+                    if (!('value' in judgment)) {
+                      throw new Error(`Error judging pull request '${pullRequest.id}': ${judgment.reason}`);
+                    }
+                    if (judgment.value != PullRequestState.READY) {
+                      throw new Error(`Pull request is no longer ready for deployment`);
+                    }
+                  },
+                ).then(
+                  function enqueueDeployment() {
+                    setCheckingReadiness(false);
+                    setEnqueingDeployment(true);
+                    return createDeployment(componentId, owner, id)
+                      .then(function closeDialog() {
+                        setOpenDialog(false);
+                      }).then(function markPullRequestAsEnqueued() {
+                        updatePullRequest(pullRequest, { enqueued: true });
+                      });
+                  },
+                ).catch(
+                  function reportEnqueuingError(error) {
+                    // TODO(dabrady) Surface this better.
+                    console.error(`Failed to enqueue PR for deployment: ${error}`);
+                  },
+                ).finally(
+                  function cleanup() {
+                    setCheckingReadiness(false);
+                    setEnqueingDeployment(false);
+                  },
+                );
             }}
           >
-            Do the thing
+            <span>{doItText}</span>
           </LoadingButton>
         </DialogActions>
       </Dialog>
