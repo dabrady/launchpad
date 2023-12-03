@@ -55,7 +55,7 @@ export function DeployButton({ pullRequest }) {
         <DialogTitle>
           Deploy&nbsp;
           <strong>
-            <Link href={url}>
+            <Link href={url} underline='hover'>
               <code>{componentId}#{number}</code>
             </Link>
           </strong> to&nbsp;

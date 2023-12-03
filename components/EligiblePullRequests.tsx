@@ -2,6 +2,7 @@
 import {
   Box,
   CircularProgress,
+  Link,
   Stack,
   Table,
   TableBody,
@@ -72,13 +73,15 @@ export default function EligiblePullRequests({ components, actions }: Props) {
                       {Chips[state]}
                     </TableCell>
                     <TableCell>
-                      <a href={url}>
+                      <Link href={url} underline='hover'>
                         <code>{componentId} #{number}</code>
-                        <br/>
-                        {title}
-                      </a>
+                      </Link>
+                      <br/>
+                      {title}
                     </TableCell>
-                    <TableCell><a href={authorUrl}>{authorHandle}</a></TableCell>
+                    <TableCell>
+                      <Link href={authorUrl} underline='hover'>{authorHandle}</Link>
+                    </TableCell>
                     <TableCell>
                       <Stack spacing={1} direction="row">
                         {...actions[state](pullRequest)}
