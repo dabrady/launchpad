@@ -4,8 +4,9 @@ import {
   doc,
   getDocs,
   onSnapshot,
-  updateDoc,
   query,
+  serverTimestamp,
+  updateDoc,
   where,
   FirestoreError,
   QuerySnapshot,
@@ -62,9 +63,13 @@ export function updatePullRequest(
   { id, componentId }: PullRequest,
   updates: Partial<RawPullRequest>,
 ) {
-  var firestoreDocPath = `components/${componentId}/pull_requests/${id}`;
-  var firestoreDocRef = doc(firestore, firestoreDocPath);
-  updateDoc(firestoreDocRef, updates);
+  return updateDoc(
+    doc(firestore, `components/${componentId}/pull_requests/${id}`),
+    {
+      ...updates,
+      timestamp: serverTimestamp(),
+    },
+  );
 }
 
 export default function usePullRequests(components: string[], targetEnv: Environment) {
