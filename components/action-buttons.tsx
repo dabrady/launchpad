@@ -1,3 +1,5 @@
+import LoadingButton from '@mui/lab/LoadingButton';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import {
   Button,
   Dialog,
@@ -13,12 +15,19 @@ import { useState } from 'react';
 import { Environment } from '@/app/types'
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import { labelOf } from '@/components/utils/typescript';
+import { createDeployment } from '@/components/utils/useDeployments';
 import { updatePullRequest } from '@/components/utils/usePullRequests';
+import { auth } from "@/firebase";
 
 export function DeployButton({ pullRequest }) {
+  var owner = auth.currentUser;
+  var disabled = !owner; // NOTE(dabrady) Should not be possible, just being safe.
   var { targetEnv } = useTargetEnvironment();
   var [openDialog, setOpenDialog] = useState(false);
+  var [enqueuingDeployment, setEnqueingDeployment] = useState(false);
+
   var {
+    id,
     componentId,
     number,
     title,
@@ -30,7 +39,8 @@ export function DeployButton({ pullRequest }) {
       <Button
         variant="outlined"
         color="primary"
-        onClick={function beginDeployment() {
+        disabled={disabled}
+        onClick={function promptForConfirmation() {
           setOpenDialog(true);
         }}
       >
@@ -39,7 +49,7 @@ export function DeployButton({ pullRequest }) {
 
       <Dialog
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={enqueuingDeployment ? undefined : () => setOpenDialog(false)}
         maxWidth='xs'
         fullWidth={true}
         // NOTE(dabrady) This positions the modal slightly off-center, vertically speaking.
@@ -56,7 +66,7 @@ export function DeployButton({ pullRequest }) {
         <DialogTitle>
           Deploy&nbsp;
           <strong>
-            <Link href={url} underline='hover'>
+            <Link href={url} underline='hover' color='inherit'>
               <code>{componentId}#{number}</code>
             </Link>
           </strong> to&nbsp;
@@ -73,16 +83,35 @@ export function DeployButton({ pullRequest }) {
         <DialogContent>{title}</DialogContent>
 
         <DialogActions>
-          <Button autoFocus onClick={() => setOpenDialog(false)}>Cancel</Button>
           <Button
+            autoFocus
+            disabled={enqueuingDeployment}
+            onClick={() => setOpenDialog(false)}
+          >
+            Cancel
+          </Button>
+          <LoadingButton
+            loading={enqueuingDeployment}
+            loadingPosition='end'
+            endIcon={<RocketLaunchIcon />}
+            color='warning'
             onClick={function beginDeployment() {
-              setOpenDialog(false);
-              console.log(`deploying to ${targetEnv}`, pullRequest);
-              updatePullRequest(pullRequest, { enqueued: true });
+              setEnqueingDeployment(true);
+              createDeployment(componentId, owner, id)
+                .then(function closeDialog() {
+                  setOpenDialog(false);
+                }).then(function markPullRequestAsEnqueued() {
+                  updatePullRequest(pullRequest, { enqueued: true });
+                }).catch(function reportEnqueuingError(error) {
+                  // TODO(dabrady) Surface this better.
+                  console.error(`Failed to enqueue PR for deployment: ${error}`);
+                }).finally(function cleanup() {
+                  setEnqueingDeployment(false);
+                });
             }}
           >
             Do the thing
-          </Button>
+          </LoadingButton>
         </DialogActions>
       </Dialog>
     </>

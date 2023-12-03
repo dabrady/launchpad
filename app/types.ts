@@ -13,6 +13,7 @@ export enum PullRequestState {
 };
 
 export enum DeploymentState {
+  ENQUEUED = 'enqueued',
   DEPLOYING = 'deploying',
   ROLLING_BACK = 'rolling back',
   NEEDS_QA = 'needs QA',
@@ -47,4 +48,14 @@ export type RawPullRequest = {
 // NOTE(dabrady) Some data is injected by the client, not stored in the DB.
 export type PullRequest = RawPullRequest & {
   state: PullRequestState;
+}
+
+export type Deployment = {
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  state: DeploymentState;
+  pullRequestId: Pick<PullRequest, 'id'>;
 }
