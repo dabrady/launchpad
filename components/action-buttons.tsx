@@ -7,22 +7,42 @@ import {
   DialogContent,
   DialogTitle,
   Link,
+  Tooltip,
   Typography,
 } from '@mui/material';
 
 import { useState } from 'react';
 
-import { Environment, PullRequestState } from '@/app/types'
+import { DeploymentState, Environment, PullRequestState } from '@/app/types'
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import { labelOf } from '@/components/utils/typescript';
-import { createDeployment } from '@/components/utils/useDeployments';
+import useDeployments, { createDeployment } from '@/components/utils/useDeployments';
 import { judgePullRequests, updatePullRequest } from '@/components/utils/usePullRequests';
 import { auth } from "@/firebase";
 
 export function DeployButton({ pullRequest }) {
+  var {
+    componentId,
+    number,
+    title,
+    url,
+  } = pullRequest;
   var owner = auth.currentUser;
-  var disabled = !owner; // NOTE(dabrady) Should not be possible, just being safe.
   var { targetEnv } = useTargetEnvironment();
+  var [deployments] = useDeployments([componentId], targetEnv);
+
+  var disabled = !owner // NOTE(dabrady) Should not be possible, just being safe.
+  // TODO(dabrady) Move this elsewhere.
+  // NOTE(dabrady) Only one PR for a given component can be actively deploying at once.
+    || deployments[componentId]?.some(
+      (d) => [
+        DeploymentState.ENQUEUED,
+        DeploymentState.DEPLOYING,
+        DeploymentState.ROLLING_BACK,
+        DeploymentState.NEEDS_QA,
+      ].includes(d.state),
+    );
+
   var [openDialog, setOpenDialog] = useState(false);
   var [checkingReadiness, setCheckingReadiness] = useState(false);
   var [enqueuingDeployment, setEnqueingDeployment] = useState(false);
@@ -34,25 +54,22 @@ export function DeployButton({ pullRequest }) {
     doItText = 'Enqueuing Deployment…';
   }
 
-  var {
-    componentId,
-    number,
-    title,
-    url,
-  } = pullRequest;
-
   return (
     <>
-      <Button
-        variant="outlined"
-        color="primary"
-        disabled={disabled}
-        onClick={function promptForConfirmation() {
-          setOpenDialog(true);
-        }}
-      >
-        <code>DEPLOY&hellip;</code>
-      </Button>
+      <Tooltip title={disabled && 'Only one PR per repo can be deployed at once'}>
+        <span>
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={disabled}
+            onClick={function promptForConfirmation() {
+              setOpenDialog(true);
+            }}
+          >
+            <code>DEPLOY&hellip;</code>
+          </Button>
+        </span>
+      </Tooltip>
 
       <Dialog
         open={openDialog}
