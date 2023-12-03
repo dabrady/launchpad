@@ -6811,6 +6811,11 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
+typescript-fsm@^1.4.5:
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/typescript-fsm/-/typescript-fsm-1.4.5.tgz#95cd3f7f47dd528aa781bce6fffd438efa860f7b"
+  integrity sha512-NsFpTyPjgpU0Ci5LAnRYO29LkopdqEvAC3rCivde55hjWB3nvACLh66G5qLKj0hwKsvahftLd7gxZeZt6UiplA==
+
 typescript@^5:
   version "5.2.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.2.2.tgz#5ebb5e5a5b75f085f22bc3f8460fba308310fa78"
