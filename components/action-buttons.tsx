@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { Environment } from '@/app/types'
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import { labelOf } from '@/components/utils/typescript';
+import { updatePullRequest } from '@/components/utils/usePullRequests';
 
 export function DeployButton({ pullRequest }) {
   var { targetEnv } = useTargetEnvironment();
@@ -77,6 +78,7 @@ export function DeployButton({ pullRequest }) {
             onClick={function beginDeployment() {
               setOpenDialog(false);
               console.log(`deploying to ${targetEnv}`, pullRequest);
+              updatePullRequest(pullRequest, { enqueued: true });
             }}
           >
             Do the thing

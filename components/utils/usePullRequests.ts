@@ -1,8 +1,10 @@
 import {
   collection,
   collectionGroup,
+  doc,
   getDocs,
   onSnapshot,
+  updateDoc,
   query,
   where,
   FirestoreError,
@@ -54,6 +56,15 @@ async function judgePullRequests(
         deployable ? PullRequestState.READY : PullRequestState.NOT_READY
       ));
   }));
+}
+
+export function updatePullRequest(
+  { id, componentId }: PullRequest,
+  updates: Partial<RawPullRequest>,
+) {
+  var firestoreDocPath = `components/${componentId}/pull_requests/${id}`;
+  var firestoreDocRef = doc(firestore, firestoreDocPath);
+  updateDoc(firestoreDocRef, updates);
 }
 
 export default function usePullRequests(components: string[], targetEnv: Environment) {
