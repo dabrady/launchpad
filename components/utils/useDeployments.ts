@@ -113,7 +113,7 @@ export function updateDeployment(
 }
 
 export function createDeployment(
-  { componentId, id: pullRequestId, number }: PullRequest,
+  { componentId, id: pullRequestId, number, url }: PullRequest,
   { uid: id, displayName: name, email }: FirebaseUser,
   targetEnv: Environment,
 ) {
@@ -122,6 +122,7 @@ export function createDeployment(
     {
       pullRequestId,
       displayName: `${componentId} #${number}`,
+      pullRequestUrl: url,
       owner: { id, name, email },
       state: DeploymentState.ENQUEUED,
       target: targetEnv,

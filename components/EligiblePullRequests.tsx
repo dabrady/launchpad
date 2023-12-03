@@ -46,8 +46,8 @@ export default function EligiblePullRequests({ components, actions }: Props) {
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
-            <TableCell>Pull Request</TableCell>
-            <TableCell>Author</TableCell>
+            <TableCell align='center'>Pull Request</TableCell>
+            <TableCell align='center'>Author</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -69,21 +69,21 @@ export default function EligiblePullRequests({ components, actions }: Props) {
                 } = pullRequest;
                 return (
                   <TableRow key={index} hover>
-                    <TableCell>
+                    <TableCell align='center' width={150}>
                       {Chips[state]}
                     </TableCell>
-                    <TableCell>
+                    <TableCell width={150}>
                       <Link href={url} underline='hover'>
                         <code>{componentId} #{number}</code>
                       </Link>
                       <br/>
                       {title}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align='center' width={150}>
                       <Link href={authorUrl} underline='hover'>{authorHandle}</Link>
                     </TableCell>
-                    <TableCell>
-                      <Stack spacing={1} direction="row">
+                    <TableCell width={150}>
+                      <Stack spacing={1} direction="row" justifyContent='center'>
                         {...actions[state](pullRequest)}
                       </Stack>
                     </TableCell>

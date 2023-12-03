@@ -1,6 +1,11 @@
 import dayjs from 'dayjs';
 
-import { Box, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Link,
+  Typography,
+} from '@mui/material';
 import {
   DataGrid,
   GridToolbar,
@@ -24,6 +29,8 @@ const COLUMNS = [
     field: 'state',
     headerName: '',
     width: 150,
+    headerAlign: 'center',
+    align: 'center',
     renderCell: function renderChip(params) {
       return Chips[params.value];
     }
@@ -33,16 +40,41 @@ const COLUMNS = [
     field: 'displayName',
     headerName: 'What?',
     width: 150,
+    headerAlign: 'center',
+    align: 'center',
+    renderCell: function monospace(params) {
+      return (
+        <Link href={params.row.pullRequestUrl} underline='hover'>
+          <code>{params.value}</code>
+        </Link>
+      );
+    }
   },
   {
     sortable: false,
     field: 'owner',
     headerName: 'Who?',
     width: 150,
+    headerAlign: 'center',
+    align: 'center',
     valueGetter: function getOwnerName(params) {
       return params.value.name;
     }
   },
+  {
+    sortable: false,
+    filterable: false,
+    field: 'id',
+    headerName: '',
+    width: 150,
+    headerAlign: 'center',
+    align: 'center',
+    renderCell: function renderActions(params) {
+      return (
+        <Button variant='outlined'>Open&hellip;</Button>
+      );
+    }
+  }
 ];
 
 export default function ActiveDeployments({ components }: Props) {
