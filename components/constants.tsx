@@ -13,6 +13,7 @@ export const Chips: {
   [PullRequestState.NOT_READY]: <MonoChip label={PullRequestState.NOT_READY} color="default"/>,
 
   // Deployments
+  [DeploymentState.ENQUEUED]: <MonoChip label={DeploymentState.ENQUEUED} color="default"/>,
   [DeploymentState.DEPLOYING]: <MonoChip label={DeploymentState.DEPLOYING} color="warning"/>,
   [DeploymentState.ROLLING_BACK]: <MonoChip label={DeploymentState.ROLLING_BACK} color="warning"/>,
   [DeploymentState.NEEDS_QA]: <MonoChip label={DeploymentState.NEEDS_QA} color="primary"/>,

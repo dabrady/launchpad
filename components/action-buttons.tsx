@@ -35,7 +35,6 @@ export function DeployButton({ pullRequest }) {
   }
 
   var {
-    id,
     componentId,
     number,
     title,
@@ -123,7 +122,7 @@ export function DeployButton({ pullRequest }) {
                   function enqueueDeployment() {
                     setCheckingReadiness(false);
                     setEnqueingDeployment(true);
-                    return createDeployment(componentId, owner, id)
+                    return createDeployment(pullRequest, owner, targetEnv)
                       .then(function closeDialog() {
                         setOpenDialog(false);
                       }).then(function markPullRequestAsEnqueued() {

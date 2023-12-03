@@ -30,7 +30,10 @@ function subscribe(
       where('target', '==', targetEnv),
     ),
     function _processNextSnapshot(snapshot: QuerySnapshot) {
-      var deployments = snapshot.docs.map((d) => d.data() as Deployment);
+      var deployments = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }) as Deployment);
       processNextSnapshot(deployments);
     },
     function _processSnapshotError(error: FirestoreError) {
@@ -53,16 +56,18 @@ export function updateDeployment(
 }
 
 export function createDeployment(
-  component: string,
+  { componentId, id: pullRequestId, number }: PullRequest,
   { uid: id, displayName: name, email }: FirebaseUser,
-  pullRequestId: Pick<Deployment, 'pullRequestId'>,
+  targetEnv: Environment,
 ) {
   return addDoc(
-    collection(firestore, 'components', component, 'deployments'),
+    collection(firestore, 'components', componentId, 'deployments'),
     {
+      pullRequestId,
+      displayName: `${componentId} #${number}`,
       owner: { id, name, email },
       state: DeploymentState.ENQUEUED,
-      pullRequestId,
+      target: targetEnv,
       timestamp: serverTimestamp(),
     },
   );

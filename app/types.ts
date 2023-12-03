@@ -51,6 +51,7 @@ export type PullRequest = RawPullRequest & {
 }
 
 export type Deployment = {
+  id: string;
   owner: {
     id: string;
     name: string;

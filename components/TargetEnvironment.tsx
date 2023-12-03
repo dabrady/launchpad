@@ -23,6 +23,7 @@ export function useTargetEnvironment() {
 }
 
 export function TargetEnvironmentProvider({ children }: { children: React.ReactNode }) {
+  // TODO(dabrady) Cache this in URL params so we load the correct view on refresh.
   var [targetEnv, setTargetEnv] = useState(Environment.STAGING);
   return (
     <TargetEnvironmentContext.Provider value={{

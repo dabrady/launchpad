@@ -1,5 +1,4 @@
 'use client';
-
 import { signInWithPopup } from "firebase/auth";
 import Image from 'next/image';
 import {
@@ -8,13 +7,6 @@ import {
   CircularProgress,
   Collapse,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableFooter,
-  TableHead,
-  TableRow,
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
@@ -32,66 +24,14 @@ import {
   RejectButton,
   RevertButton,
 } from '@/components/action-buttons';
-import { Chips } from '@/components/constants';
+import ActiveDeployments from '@/components/ActiveDeployments';
 import EligiblePullRequests from '@/components/EligiblePullRequests';
-import { useTargetEnvironment } from '@/components/TargetEnvironment';
+import DeploymentHistory from '@/components/DeploymentHistory';
 import useAuth from '@/components/utils/useAuth';
 
 import { auth, GoogleAuthProvider } from "@/firebase";
 
 import styles from './page.module.css';
-
-var MOCK_DATA = [
-  {
-    state: DeploymentState.DEPLOYING,
-    date: Date.now(),
-    repo: 'dossier-ai',
-    author: 'dabrady',
-    target: Environment.STAGING,
-  },
-  {
-    state: DeploymentState.FAILED,
-    date: Date.now(),
-    repo: 'dossier-ai',
-    author: 'dabrady',
-    target: Environment.STAGING,
-  },
-  {
-    state: DeploymentState.SHIPPED,
-    date: Date.now(),
-    repo: 'dossier-ai',
-    author: 'dabrady',
-    target: Environment.STAGING,
-  },
-  {
-    state: DeploymentState.REVERTED,
-    date: Date.now(),
-    repo: 'dossier-ai',
-    author: 'dabrady',
-    target: Environment.PRODUCTION,
-  },
-  {
-    state: DeploymentState.NEEDS_QA,
-    date: Date.now(),
-    repo: 'dossier-ai',
-    author: 'dabrady',
-    target: Environment.STAGING,
-  },
-  {
-    state: DeploymentState.ROLLING_BACK,
-    date: Date.now(),
-    repo: 'dossier-ai',
-    author: 'dabrady',
-    target: Environment.STAGING,
-  },
-  {
-    state: DeploymentState.REJECTED,
-    date: Date.now(),
-    repo: 'dossier-ai',
-    author: 'dabrady',
-    target: Environment.PRODUCTION,
-  },
-];
 
 const DEPLOYABLE_COMPONENTS = [
   'launchpad',
@@ -124,7 +64,6 @@ const Actions = {
 };
 
 export default function Home() {
-  var { targetEnv } = useTargetEnvironment();
   var currentUser = useAuth({
     onLogout: function login() {
       signInWithPopup(auth, GoogleAuthProvider).then(() => console.log('signed in'));
@@ -142,46 +81,17 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <Stack spacing={10}>
-        {/* TODO(dabrady) Add component filter */}
+        {/* NOTE(dabrady) Add component filter as we grow. */}
         <EligiblePullRequests
           components={DEPLOYABLE_COMPONENTS}
           actions={Actions}
         />
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell></TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Pull Request</TableCell>
-                <TableCell>Author</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {MOCK_DATA.filter(function({ target }) {
-                return target != targetEnv;
-              }).map(function renderItem({ state, date, repo, author }, index) {
-                var actions = Actions[state] ?? [];
-                return (
-                  <TableRow key={index}>
-                    <TableCell>
-                      {Chips[state]}
-                    </TableCell>
-                    <TableCell>{date}</TableCell>
-                    <TableCell><a href="#"><code>{repo}</code></a></TableCell>
-                    <TableCell><a href="#">{author}</a></TableCell>
-                    <TableCell>
-                      <Stack spacing={1} direction="row">
-                        {actions}
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-            <TableFooter></TableFooter>
-          </Table>
-        </TableContainer>
+
+        <ActiveDeployments
+          components={DEPLOYABLE_COMPONENTS}
+        />
+
+        <DeploymentHistory />
       </Stack>
     </main>
   );

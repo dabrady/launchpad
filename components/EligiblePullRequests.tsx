@@ -68,7 +68,7 @@ export default function EligiblePullRequests({ components, actions }: Props) {
                   },
                 } = pullRequest;
                 return (
-                  <TableRow key={index}>
+                  <TableRow key={index} hover>
                     <TableCell>
                       {Chips[state]}
                     </TableCell>
