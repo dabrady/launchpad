@@ -52,11 +52,15 @@ export type PullRequest = RawPullRequest & {
 
 export type Deployment = {
   id: string;
+  pullRequestId: Pick<PullRequest, 'id'>;
+  pullRequestUrl: Pick<PullRequest, 'url'>;
   owner: {
     id: string;
     name: string;
     email: string;
   };
   state: DeploymentState;
-  pullRequestId: Pick<PullRequest, 'id'>;
+  target: Environment;
+  displayName: string;
+  timestamp: string;
 }
