@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { DeploymentState, Environment, PullRequestState } from '@/app/types'
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import { labelOf } from '@/components/utils/typescript';
-import useDeployments, { createDeployment } from '@/components/utils/useDeployments';
+import { createDeployment, useActiveDeployments } from '@/components/utils/useDeployments';
 import { judgePullRequests, updatePullRequest } from '@/components/utils/usePullRequests';
 import { auth } from "@/firebase";
 
@@ -29,19 +29,11 @@ export function DeployButton({ pullRequest }) {
   } = pullRequest;
   var owner = auth.currentUser;
   var { targetEnv } = useTargetEnvironment();
-  var [deployments] = useDeployments([componentId], targetEnv);
+  var [deployments] = useActiveDeployments([componentId], targetEnv);
 
   var disabled = !owner // NOTE(dabrady) Should not be possible, just being safe.
-  // TODO(dabrady) Move this elsewhere.
   // NOTE(dabrady) Only one PR for a given component can be actively deploying at once.
-    || deployments[componentId]?.some(
-      (d) => [
-        DeploymentState.ENQUEUED,
-        DeploymentState.DEPLOYING,
-        DeploymentState.ROLLING_BACK,
-        DeploymentState.NEEDS_QA,
-      ].includes(d.state),
-    );
+    || Boolean(deployments[componentId]?.length);
 
   var [openDialog, setOpenDialog] = useState(false);
   var [checkingReadiness, setCheckingReadiness] = useState(false);

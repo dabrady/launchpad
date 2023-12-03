@@ -11,7 +11,7 @@ import {
 import { DeploymentState, Environment } from '@/app/types';
 import { Chips } from '@/components/constants';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
-import useDeployments from '@/components/utils/useDeployments';
+import { useActiveDeployments } from '@/components/utils/useDeployments';
 import { auth } from "@/firebase";
 
 interface Props {
@@ -47,7 +47,7 @@ const COLUMNS = [
 
 export default function ActiveDeployments({ components }: Props) {
   var { targetEnv } = useTargetEnvironment();
-  var [deployments, loaded] = useDeployments(components, targetEnv);
+  var [deployments, loaded] = useActiveDeployments(components, targetEnv);
 
   return (
     <DataGrid
