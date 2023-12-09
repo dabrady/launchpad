@@ -168,7 +168,6 @@ const ModalContents = forwardRef(function ModalContents(props, ref) {
 function Title({ children }) {
   return (
     <Typography
-      variant='h3'
       as='h1'
       sx={{
         fontSize: {
@@ -211,9 +210,23 @@ function useStepper({ steps, vertical, onClose }) {
               nonLinear // TODO(dabrady) remove
             >
               {steps.map(function renderStep(step, index) {
+                var completed = completedSteps[index];
                 return (
-                  <Step key={index} completed={completedSteps[index]}>
-                    <StepButton color='inherit' onClick={() => setActiveStep(index)}>
+                  <Step
+                    key={index}
+                    completed={completed}
+                    sx={{
+                      '& .MuiStepIcon-root.Mui-completed': {
+                        color: (theme) => activeStep == index
+                          ? theme.palette.primary.main
+                          : theme.palette.text.secondary,
+                      },
+                    }}
+                  >
+                    <StepButton
+                      onClick={() => setActiveStep(index)}
+                      disabled={index > 0 && !completedSteps[index - 1]}
+                    >
                       <StepLabel>{step}</StepLabel>
                     </StepButton>
                   </Step>
@@ -259,7 +272,7 @@ function useStepper({ steps, vertical, onClose }) {
               Complete
             </Button>
             <Button
-              disabled={activeStep == (steps.length - 1)}
+              disabled={activeStep == (steps.length - 1) || !completedSteps[activeStep]}
               onClick={() => setActiveStep((prev) => prev + 1)}
             >
               Next
