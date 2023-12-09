@@ -1,3 +1,5 @@
+'use client';
+
 import dayjs from 'dayjs';
 
 import {
@@ -13,8 +15,11 @@ import {
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 
-import { DeploymentState, Environment } from '@/app/types';
+import { useState } from 'react';
+
+import { Deployment as TDeployment, DeploymentState, Environment } from '@/app/types';
 import { Chips } from '@/components/constants';
+import DeploymentModal from '/components/DeploymentModal';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import { useActiveDeployments } from '@/components/utils/useDeployments';
 import { auth } from "@/firebase";
@@ -70,10 +75,23 @@ const COLUMNS = [
     headerAlign: 'center',
     align: 'center',
     renderCell: function renderActions(params) {
+      var [openDeployment, setOpenDeployment] = useState(false);
       return (
-        <Button variant='outlined'>Open&hellip;</Button>
+        <>
+          <Button
+            variant='outlined'
+            onClick={() => setOpenDeployment(true)}
+          >
+            Open&hellip;
+          </Button>
+          <DeploymentModal
+            data={params.row}
+            open={openDeployment}
+            onClose={() => setOpenDeployment(false)}
+          />
+        </>
       );
-    }
+    },
   }
 ];
 
