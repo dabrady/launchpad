@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   Close as CloseIcon,
@@ -15,22 +15,23 @@ import {
   Modal,
   Stack,
   Step,
+  StepConnector,
   StepButton,
   StepLabel,
   Stepper,
   Typography,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 
 import { forwardRef } from 'react';
 
 import { Deployment } from '@/app/types';
 
-const DEPLOYMENT_STEPS = [
-  'Deploy',
-  'Verify',
-  'Merge',
-];
+const DEPLOYMENT_STEPS = {
+  Deploy: <DeployStep />,
+  Verify: <VerifyStep />,
+  Merge: <MergeStep />,
+};
 
 interface Props {
   data: Deployment;
@@ -58,12 +59,13 @@ export default function DeploymentModal({
 }: Props) {
   var theme = useTheme();
   var smallScreen: boolean = useMediaQuery(theme.breakpoints.down('md'));
+  var vertical = smallScreen;
+  var steps = Object.keys(DEPLOYMENT_STEPS);
 
-  var [activeStep, { Header, Footer }] = useStepper({
-    steps: DEPLOYMENT_STEPS,
-    vertical: smallScreen,
-    onClose,
-  });
+  var [activeStep, setActiveStep] = useState(0);
+  var [completedSteps, setCompletedSteps] = useState<{
+    [k: number]: boolean;
+  } >({});
 
   return (
     <Modal
@@ -81,49 +83,145 @@ export default function DeploymentModal({
           gap: (theme) => theme.spacing(smallScreen ? 10 : 4),
         }}
       >
-        <Header />
+        <Title>
+          <Link
+            href={pullRequestUrl}
+            color='inherit'
+            underline='none'
+            target='_blank'
+            rel='noopener'
+            sx={{
+              transition: 'color 0.125s linear',
+              '&:hover': {
+                color: (theme) => theme.palette.primary.main,
+              },
+            }}
+          >
+            {/* Ensure wrapping doesn't separate the icon from the title text. */}
+            {displayName.slice(0, -1)}
+            <Box as='span' sx={{ whiteSpace: 'nowrap' }}>
+              {displayName.slice(-1)}
+              <Box as='sup' sx={{marginTop: '0px'}}>
+                <OpenInNewIcon
+                  sx={{
+                    fontSize: {
+                      xs: '1rem',
+                      sm: '1rem',
+                      md: '1.5rem',
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+          </Link>
+        </Title>
+
+        <>
+          <Stepper
+            activeStep={activeStep}
+            orientation={vertical ? 'vertical' : 'horizontal'}
+            sx={{
+              // Leave room for close button when horizontal
+              width: vertical ? 'auto' : 'calc(100% - 40px)',
+              // Span full height when vertical
+              height: vertical ? '100%' : 'auto',
+              '& .MuiStepConnector-line': {
+                height: '100%',
+              },
+              '& .MuiStepConnector-root': {
+                transition: 'flex-basis 0.3s ease',
+                flex: '1 1 0rem',
+              },
+              '& .MuiStep-root:has(.MuiStepButton-root[aria-current="step"]) + .MuiStepConnector-root': {
+                flexBasis: '100%',
+              },
+            }}
+            nonLinear // TODO(dabrady) remove
+          >
+            {steps.map(function renderStep(step, index) {
+              var active = activeStep == index;
+              var completed = completedSteps[index];
+              return (
+                <Step
+                  key={index}
+                  completed={completed}
+                  sx={{
+                    '& .MuiStepIcon-root.Mui-completed': {
+                      color: (theme) => active
+                                      ? theme.palette.primary.main
+                                      : theme.palette.text.secondary,
+                    },
+                  }}
+                >
+                  <StepButton
+                    onClick={() => setActiveStep(index)}
+                    disabled={index > 0 && !completedSteps[index - 1]}
+                  >
+                    <StepLabel>{step}</StepLabel>
+                  </StepButton>
+                </Step>
+              );
+            })}
+            <StepConnector
+              sx={{
+                '& .MuiStepConnector-line': {
+                  minHeight: 0
+                }
+              }}
+            />
+          </Stepper>
+
+          <IconButton
+            onClick={onClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </>
 
         <Stack spacing={2} sx={{
           height: '100%',
           flexGrow: 1,
         }}>
-          <Title>
-            <Link
-              href={pullRequestUrl}
-              color='inherit'
-              underline='none'
-              target='_blank'
-              rel='noopener'
-              sx={{
-                transition: 'color 0.125s linear',
-                '&:hover': {
-                  color: (theme) => theme.palette.primary.main,
-                },
-              }}
-            >
-              {/* Ensure wrapping doesn't separate the icon from the title text. */}
-              {displayName.slice(0, -1)}
-              <Box as='span' sx={{ whiteSpace: 'nowrap' }}>
-                {displayName.slice(-1)}
-                <Box as='sup' sx={{marginTop: '0px'}}>
-                  <OpenInNewIcon
-                    sx={{
-                      fontSize: {
-                        xs: '1rem',
-                        sm: '1rem',
-                        md: '1.5rem',
-                      },
-                    }}
-                  />
-                </Box>
-              </Box>
-            </Link>
-          </Title>
-          <Typography variant='p'>look! content!</Typography>
+          {DEPLOYMENT_STEPS[Object.keys(DEPLOYMENT_STEPS)[activeStep]]}
 
           {/* Push the footer to the bottom */}
           <Box sx={{ flex: '1 1 auto' }} />
-          <Footer />
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              paddingTop: (theme) => theme.spacing(2),
+            }}
+          >
+            <Button
+              disabled={activeStep == 0}
+              onClick={() => setActiveStep((prev) => prev - 1)}
+            >
+              Back
+            </Button>
+            <Box sx={{ flex: '1 1 auto' }} />
+            <Button
+              disabled={completedSteps[activeStep]}
+              onClick={() => {
+                setCompletedSteps((prev) => ({ ...prev, [activeStep]: true }));
+              }}
+            >
+              Complete
+            </Button>
+            <Button
+              disabled={activeStep == (steps.length - 1) || !completedSteps[activeStep]}
+              onClick={() => setActiveStep((prev) => prev + 1)}
+            >
+              Next
+            </Button>
+          </Box>
         </Stack>
 
       </ModalContents>
@@ -148,7 +246,7 @@ const ModalContents = forwardRef(function ModalContents(props, ref) {
 
           maxWidth: (theme) => theme.breakpoints.values.md,
           width: '80%',
-          minWidth: (theme) => theme.breakpoints.values.sm,
+          minWidth: '650px',
           height: '80%',
 
           bgcolor: 'background.paper',
@@ -182,104 +280,14 @@ function Title({ children }) {
   );
 }
 
+function DeployStep() {
+  return <Typography>deploying</Typography>;
+}
 
-function useStepper({ steps, vertical, onClose }) {
-  var [activeStep, setActiveStep] = useState(0);
-  var [completedSteps, setCompletedSteps] = useState<{
-    [k: number]: boolean;
-  } >({});
+function VerifyStep() {
+  return <Typography>verifying</Typography>;
+}
 
-  return [
-    activeStep,
-    {
-      Header: function Header() {
-        return (
-          <>
-            <Stepper
-              activeStep={activeStep}
-              orientation={vertical ? 'vertical' : 'horizontal'}
-              sx={{
-                // Leave room for close button when horizontal
-                width: vertical ? 'auto' : 'calc(100% - 40px)',
-                // Span full height when vertical
-                height: vertical ? '100%' : 'auto',
-                '& .MuiStepConnector-line': {
-                  height: '100%',
-                },
-              }}
-              nonLinear // TODO(dabrady) remove
-            >
-              {steps.map(function renderStep(step, index) {
-                var completed = completedSteps[index];
-                return (
-                  <Step
-                    key={index}
-                    completed={completed}
-                    sx={{
-                      '& .MuiStepIcon-root.Mui-completed': {
-                        color: (theme) => activeStep == index
-                          ? theme.palette.primary.main
-                          : theme.palette.text.secondary,
-                      },
-                    }}
-                  >
-                    <StepButton
-                      onClick={() => setActiveStep(index)}
-                      disabled={index > 0 && !completedSteps[index - 1]}
-                    >
-                      <StepLabel>{step}</StepLabel>
-                    </StepButton>
-                  </Step>
-                );
-              })}
-            </Stepper>
-            <IconButton
-              onClick={onClose}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-                color: (theme) => theme.palette.grey[500],
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </>
-        );
-      },
-      Footer: function Footer() {
-        return (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              paddingTop: (theme) => theme.spacing(2),
-            }}
-          >
-            <Button
-              disabled={activeStep == 0}
-              onClick={() => setActiveStep((prev) => prev - 1)}
-            >
-              Back
-            </Button>
-            <Box sx={{ flex: '1 1 auto' }} />
-            <Button
-              disabled={completedSteps[activeStep]}
-              onClick={() => {
-                setCompletedSteps((prev) => ({ ...prev, [activeStep]: true }));
-              }}
-            >
-              Complete
-            </Button>
-            <Button
-              disabled={activeStep == (steps.length - 1) || !completedSteps[activeStep]}
-              onClick={() => setActiveStep((prev) => prev + 1)}
-            >
-              Next
-            </Button>
-          </Box>
-        );
-      },
-    },
-  ];
+function MergeStep() {
+  return <Typography>merging</Typography>;
 }
