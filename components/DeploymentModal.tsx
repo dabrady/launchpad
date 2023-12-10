@@ -26,6 +26,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { forwardRef } from 'react';
 
 import { Deployment } from '@/app/types';
+import { Chips } from '@/components/constants';
 
 const DEPLOYMENT_STEPS = {
   Deploy: <DeployStep />,
@@ -71,45 +72,44 @@ export default function DeploymentModal({
       }}
     >
       <ModalContents
+        smallScreen={smallScreen}
+        state={state}
         onClose={onClose}
-        sx={{
-          display: 'flex',
-          flexDirection: smallScreen ? 'row' : 'column',
-          gap: (theme) => theme.spacing(smallScreen ? 10 : 4),
-        }}
       >
-        <Title>
-          <Link
-            href={pullRequestUrl}
-            color='inherit'
-            underline='none'
-            target='_blank'
-            rel='noopener'
-            sx={{
-              transition: 'color 0.125s linear',
-              '&:hover': {
-                color: (theme) => theme.palette.primary.main,
-              },
-            }}
-          >
-            {/* Ensure wrapping doesn't separate the icon from the title text. */}
-            {displayName.slice(0, -1)}
-            <Box as='span' sx={{ whiteSpace: 'nowrap' }}>
-              {displayName.slice(-1)}
-              <Box as='sup' sx={{marginTop: '0px'}}>
-                <OpenInNewIcon
-                  sx={{
-                    fontSize: {
-                      xs: '1rem',
-                      sm: '1rem',
-                      md: '1.5rem',
-                    },
-                  }}
-                />
+        <ModalHeader>
+          <Title>
+            <Link
+              href={pullRequestUrl}
+              color='inherit'
+              underline='none'
+              target='_blank'
+              rel='noopener'
+              sx={{
+                transition: 'color 0.125s linear',
+                '&:hover': {
+                  color: (theme) => theme.palette.primary.main,
+                },
+              }}
+            >
+              {/* Ensure wrapping doesn't separate the icon from the title text. */}
+              {displayName.slice(0, -1)}
+              <Box as='span' sx={{ whiteSpace: 'nowrap' }}>
+                {displayName.slice(-1)}
+                <Box as='sup' sx={{marginTop: '0px'}}>
+                  <OpenInNewIcon
+                    sx={{
+                      fontSize: {
+                        xs: '1rem',
+                        sm: '1rem',
+                        md: '1.5rem',
+                      },
+                    }}
+                  />
+                </Box>
               </Box>
-            </Box>
-          </Link>
-        </Title>
+            </Link>
+          </Title>
+        </ModalHeader>
 
         <BetterStepper stepLabels={stepLabels} vertical={smallScreen}>
           {function renderActiveStep(activeStep, setActiveStep, markStepCompleted) {
@@ -123,11 +123,20 @@ export default function DeploymentModal({
 
 // NOTE(dabrady) The immediate child of a `Modal` must accept a ref and other props.
 // @see https://mui.com/material-ui/guides/composition/#caveat-with-refs
-const ModalContents = forwardRef(function ModalContents(props, ref) {
-  var { children, onClose, sx = [], ...rest } = props;
+const ModalContents = forwardRef(function ModalContents(
+  {
+    children,
+    onClose,
+    smallScreen,
+    state,
+    sx = [],
+    ...props
+  },
+  ref,
+) {
   return (
-    <Box
-      {...rest}
+    <Stack
+      {...props}
       ref={ref}
       sx={[
         {
@@ -145,26 +154,63 @@ const ModalContents = forwardRef(function ModalContents(props, ref) {
           border: '2px solid #000',
           borderRadius: '6px',
           boxShadow: 24,
-          padding: (theme) => theme.spacing(4),
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <IconButton
-        onClick={onClose}
+      <Stack
+        direction='row'
+        spacing={2}
         sx={{
-          position: 'absolute',
-          right: 8,
-          top: 8,
-          color: (theme) => theme.palette.grey[500],
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: (theme) => theme.spacing(1),
+          paddingBottom: (theme) => theme.spacing(2),
         }}
       >
-        <CloseIcon />
-      </IconButton>
-      {children}
-    </Box>
+        <Box sx={{
+          paddingTop: (theme) => theme.spacing(1),
+          paddingLeft: (theme) => theme.spacing(1),
+        }}>
+          {Chips[state]}
+        </Box>
+        <IconButton
+          onClick={onClose}
+          sx={{
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </Stack>
+
+      <Box sx={{
+        display: 'flex',
+        flexBasis: '100%',
+        flexDirection: smallScreen ? 'row' : 'column',
+        gap: (theme) => theme.spacing(smallScreen ? 10 : 4),
+        padding: (theme) => theme.spacing(4),
+        paddingTop: 0,
+      }}>
+        {children}
+      </Box>
+    </Stack>
   );
 });
+
+function ModalHeader({ children }) {
+  return (
+    <Stack
+      direction='row'
+      spacing={2}
+      sx={{
+        justifyContent: 'space-between'
+      }}
+    >
+      {children}
+    </Stack>
+  );
+}
 
 function Title({ children }) {
   return (
@@ -215,8 +261,6 @@ function BetterStepper({
         orientation={vertical ? 'vertical' : 'horizontal'}
         nonLinear // NOTE(dabrady) I'm redefining the linear implementation
         sx={{
-          // Leave room for close button when horizontal
-          width: vertical ? 'auto' : 'calc(100% - 40px)',
           // Span full height when vertical
           height: vertical ? '100%' : 'auto',
           '& .MuiStepConnector-line': {
