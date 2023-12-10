@@ -330,8 +330,13 @@ function BetterStepper({
             transition: 'flex-basis 0.3s ease',
             flex: '1 1 0rem',
           },
-          '& .MuiStep-root:has(.MuiStepButton-root[aria-current="step"]) + .MuiStepConnector-root': {
+          '& .MuiStep-root:has([aria-current="step"]) + .MuiStepConnector-root': {
             flexBasis: '100%',
+            '& > .MuiStepConnector-line': {
+              [vertical ? 'borderLeftStyle' : 'borderTopStyle' ]: 'dashed',
+            },
+          },
+          '& .MuiStep-root:not(:has([aria-current="step"])) + .MuiStepConnector-root': {
           },
         }}
       >
@@ -366,8 +371,7 @@ function BetterStepper({
       </Stepper>
 
       <Stack spacing={2} sx={{
-        flex: '1 1 auto',
-        //paddingTop: (theme) => theme.spacing(1),
+        flex: '1 1 100%',
         minWidth: 0,
         minHeight: 0,
       }}>
@@ -379,9 +383,6 @@ function BetterStepper({
         }}>
           {children(activeStep, setActiveStep, markStepCompleted)}
         </Box>
-
-        {/* Push the footer to the bottom */}
-        {/* <Box sx={{ flex: '1 1 auto' }} /> */}
 
         {/* Footer */}
         <Box
