@@ -113,21 +113,21 @@ export function updateDeployment(
 }
 
 export function createDeployment(
-  { componentId, id: pullRequestId, number, url }: PullRequest,
+  pullRequest: PullRequest,
   { uid: id, displayName: name, email }: FirebaseUser,
   targetEnv: Environment,
 ) {
+  var { componentId, number } = pullRequest;
   return addDoc(
     collection(firestore, 'components', componentId, 'deployments'),
     {
-      pullRequestId,
-      displayName: `${componentId} #${number}`,
-      pullRequestUrl: url,
+      pullRequest: { ...pullRequest, enqueued: true },
       owner: { id, name, email },
       state: DeploymentState.ENQUEUED,
       target: targetEnv,
+      displayName: `${componentId} #${number}`,
       timestamp: serverTimestamp(),
-    },
+    } as Omit<Deployment, 'id'>,
   );
 }
 

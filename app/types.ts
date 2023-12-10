@@ -52,8 +52,7 @@ export type PullRequest = RawPullRequest & {
 
 export type Deployment = {
   id: string;
-  pullRequestId: Pick<PullRequest, 'id'>;
-  pullRequestUrl: Pick<PullRequest, 'url'>;
+  pullRequest: PullRequest,
   owner: {
     id: string;
     name: string;

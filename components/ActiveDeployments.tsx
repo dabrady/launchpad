@@ -49,7 +49,7 @@ const COLUMNS = [
     align: 'center',
     renderCell: function monospace(params) {
       return (
-        <Link href={params.row.pullRequestUrl} underline='hover'>
+        <Link href={params.row.pullRequest.url} underline='hover'>
           <code>{params.value}</code>
         </Link>
       );

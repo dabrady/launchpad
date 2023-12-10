@@ -44,8 +44,9 @@ interface Props {
 export default function DeploymentModal({
   data: {
     id,
-    pullRequestId,
-    pullRequestUrl,
+    pullRequest: {
+      url,
+    },
     owner: {
       id: ownerId,
       name: ownerName,
@@ -81,7 +82,7 @@ export default function DeploymentModal({
         <ModalHeader>
           <Title>
             <Link
-              href={pullRequestUrl}
+              href={url}
               color='inherit'
               underline='none'
               target='_blank'
