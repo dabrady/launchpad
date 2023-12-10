@@ -1,5 +1,6 @@
 'use client';
 
+import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 
 import {
@@ -74,6 +75,7 @@ export default function DeploymentModal({
       <ModalContents
         smallScreen={smallScreen}
         state={state}
+        timestamp={timestamp.toDate()}
         onClose={onClose}
       >
         <ModalHeader>
@@ -129,6 +131,7 @@ const ModalContents = forwardRef(function ModalContents(
     onClose,
     smallScreen,
     state,
+    timestamp,
     sx = [],
     ...props
   },
@@ -168,12 +171,30 @@ const ModalContents = forwardRef(function ModalContents(
           paddingBottom: (theme) => theme.spacing(2),
         }}
       >
-        <Box sx={{
-          paddingTop: (theme) => theme.spacing(1),
-          paddingLeft: (theme) => theme.spacing(1),
-        }}>
-          {Chips[state]}
-        </Box>
+        <Stack
+          direction='row'
+          spacing={2}
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Box sx={{
+            paddingLeft: (theme) => theme.spacing(1),
+          }}>
+            {Chips[state]}
+          </Box>
+          <Typography
+            variant='overline'
+            sx={{
+              fontFamily: 'monospace',
+              lineHeight: 'inherit',
+            }}
+          >
+            {dayjs(timestamp).format('HH:mm:ss @ DD MMM YYYY')}
+          </Typography>
+        </Stack>
+
         <IconButton
           onClick={onClose}
           sx={{
