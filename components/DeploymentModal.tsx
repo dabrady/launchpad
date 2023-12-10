@@ -185,12 +185,14 @@ const ModalContents = forwardRef(function ModalContents(
       </Stack>
 
       <Box sx={{
+        flexGrow: 1,
         display: 'flex',
-        flexBasis: '100%',
         flexDirection: smallScreen ? 'row' : 'column',
-        gap: (theme) => theme.spacing(smallScreen ? 10 : 4),
+        gap: (theme) => theme.spacing(smallScreen ? 6 : 4),
         padding: (theme) => theme.spacing(4),
         paddingTop: 0,
+        minWidth: 0,
+        minHeight: 0,
       }}>
         {children}
       </Box>
@@ -230,7 +232,64 @@ function Title({ children }) {
 }
 
 function DeployStep() {
-  return <Typography>deploying</Typography>;
+  return (
+    <Box as='pre' sx={{
+      height: '100%',
+      background: '#f4f4f4',
+      border: '1px solid #ddd',
+      borderRadius: '6px',
+      color: (theme) => theme.palette.text.secondary,
+      overflow: 'auto',
+      fontSize: {
+        xs: '0.65rem',
+        md: '0.85rem',
+      },
+      padding: (theme) => theme.spacing(2),
+    }}>
+  {`
+Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
+Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
+Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
+Dec 10  01:26:30.830  200
+Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
+Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
+Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
+Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
+Dec 10  01:26:30.830  200
+Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
+Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
+Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
+Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
+Dec 10  01:26:30.830  200
+Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
+Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
+Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
+Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
+Dec 10  01:26:30.830  200
+Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
+Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
+Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
+Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
+Dec 10  01:26:30.830  200
+Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
+Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
+Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
+Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
+Dec 10  01:26:30.830  200
+Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
+Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
+Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
+Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
+Dec 10  01:26:30.830  200
+Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
+Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
+Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
+Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
+Dec 10  01:26:30.830  200
+Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
+  `.trim()}
+    </Box>
+  );
 }
 
 function VerifyStep() {
@@ -307,15 +366,22 @@ function BetterStepper({
       </Stepper>
 
       <Stack spacing={2} sx={{
-        height: '100%',
-        flexGrow: 1,
-        paddingTop: (theme) => theme.spacing(1),
+        flex: '1 1 auto',
+        //paddingTop: (theme) => theme.spacing(1),
+        minWidth: 0,
+        minHeight: 0,
       }}>
         {/* NOTE(dabrady) Here is where we render the contents of each step. */}
-        {children(activeStep, setActiveStep, markStepCompleted)}
+        <Box sx={{
+          flex: '1 1 auto',
+          minWidth: 0,
+          minHeight: 0,
+        }}>
+          {children(activeStep, setActiveStep, markStepCompleted)}
+        </Box>
 
         {/* Push the footer to the bottom */}
-        <Box sx={{ flex: '1 1 auto' }} />
+        {/* <Box sx={{ flex: '1 1 auto' }} /> */}
 
         {/* Footer */}
         <Box
