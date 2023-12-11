@@ -73,6 +73,10 @@ export default function DeploymentModal({
   var theme = useTheme();
   var smallScreen: boolean = useMediaQuery(theme.breakpoints.down('md'));
   var stepLabels = Object.keys(DEPLOYMENT_STEPS);
+  // TODO(dabrady) Slice this off the title before displaying
+  var ticketNumber = title.slice(
+    ...(/^\[TRELLO-(?<ticket>\d+)\].*$/d.exec(title)?.indices.groups.ticket ?? [title.length]),
+  );
 
   return (
     <Modal
@@ -107,14 +111,18 @@ export default function DeploymentModal({
               </Typography>
             ),
             // TODO(dabrady) make real links
-            Trello: () => (
-              <Typography sx={{ fontFamily: 'monospace' }}>
-                <BetterLink
-                  href='https://trello.com/c/fvVuRsDr/156'
-                  displayText='#156'
-                />
-              </Typography>
-            ),
+            ...(ticketNumber ? {
+              Trello: () => {
+                return (
+                  <Typography sx={{ fontFamily: 'monospace' }}>
+                    <BetterLink
+                      href={`https://trello.com/c/fvVuRsDr/${ticketNumber}`}
+                      displayText={`#${ticketNumber}`}
+                    />
+                  </Typography>
+                );
+              },
+            } : {}),
           }} />
         </ModalHeader>
 
