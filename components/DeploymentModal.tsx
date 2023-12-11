@@ -20,6 +20,11 @@ import {
   StepButton,
   StepLabel,
   Stepper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
   Typography,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
@@ -30,9 +35,9 @@ import { Deployment } from '@/app/types';
 import { Chips } from '@/components/constants';
 
 const DEPLOYMENT_STEPS = {
-  Deploy: <DeployStep />,
-  Verify: <VerifyStep />,
-  Merge: <MergeStep />,
+  Deploy: (smallScreen) => <DeployStep showLogs={!smallScreen}/>,
+  Verify: (smallScreen) => <VerifyStep />,
+  Merge: (smallScreen) => <MergeStep />,
 };
 
 interface Props {
@@ -46,6 +51,11 @@ export default function DeploymentModal({
     id,
     pullRequest: {
       url,
+      title,
+      author: {
+        handle,
+        url: authorUrl,
+      }
     },
     owner: {
       id: ownerId,
@@ -66,6 +76,7 @@ export default function DeploymentModal({
 
   return (
     <Modal
+      id='modal-frame'
       keepMounted // TODO(dabrady) Don't do this, reinitialize state from database
       open={open}
       onClose={function disableBackdropClick(ev, reason: 'escapeKeyDown'|'backdropClick') {
@@ -79,44 +90,37 @@ export default function DeploymentModal({
         timestamp={timestamp.toDate()}
         onClose={onClose}
       >
-        <ModalHeader>
-          <Title>
-            <Link
-              href={url}
-              color='inherit'
-              underline='none'
-              target='_blank'
-              rel='noopener'
-              sx={{
-                transition: 'color 0.125s linear',
-                '&:hover': {
-                  color: (theme) => theme.palette.primary.main,
-                },
-              }}
-            >
-              {/* Ensure wrapping doesn't separate the icon from the title text. */}
-              {displayName.slice(0, -1)}
-              <Box as='span' sx={{ whiteSpace: 'nowrap' }}>
-                {displayName.slice(-1)}
-                <Box as='sup' sx={{marginTop: '0px'}}>
-                  <OpenInNewIcon
-                    sx={{
-                      fontSize: {
-                        xs: '1rem',
-                        sm: '1rem',
-                        md: '1.5rem',
-                      },
-                    }}
-                  />
-                </Box>
-              </Box>
-            </Link>
-          </Title>
+        <ModalHeader smallScreen={smallScreen}>
+          <Stack>
+            <Title>
+              <BetterLink href={url} displayText={displayName}/>
+            </Title>
+            <Subtitle>{title}</Subtitle>
+          </Stack>
+
+          {/* <BetterLink href={authorUrl} displayText={handle} /> */}
+          <DataTable data={{
+            State: Chips[state],
+            Author: () => (
+              <Typography sx={{ fontFamily: 'monospace' }}>
+                <BetterLink href={authorUrl} displayText={handle} />
+              </Typography>
+            ),
+            // TODO(dabrady) make real links
+            Trello: () => (
+              <Typography sx={{ fontFamily: 'monospace' }}>
+                <BetterLink
+                  href='https://trello.com/c/fvVuRsDr/156'
+                  displayText='#156'
+                />
+              </Typography>
+            ),
+          }} />
         </ModalHeader>
 
         <BetterStepper stepLabels={stepLabels} vertical={smallScreen}>
           {function renderActiveStep(activeStep, setActiveStep, markStepCompleted) {
-            return DEPLOYMENT_STEPS[stepLabels[activeStep]];
+            return DEPLOYMENT_STEPS[stepLabels[activeStep]](smallScreen);
           }}
         </BetterStepper>
       </ModalContents>
@@ -140,6 +144,7 @@ const ModalContents = forwardRef(function ModalContents(
 ) {
   return (
     <Stack
+      id='modal-contents'
       {...props}
       ref={ref}
       sx={[
@@ -163,6 +168,7 @@ const ModalContents = forwardRef(function ModalContents(
       ]}
     >
       <Stack
+        id='modal-contents-top'
         direction='row'
         spacing={2}
         sx={{
@@ -173,18 +179,15 @@ const ModalContents = forwardRef(function ModalContents(
         }}
       >
         <Stack
+          id='modal-contents-top-left'
           direction='row'
           spacing={2}
           sx={{
             alignItems: 'center',
             justifyContent: 'space-between',
+            paddingLeft: (theme) => theme.spacing(3),
           }}
         >
-          <Box sx={{
-            paddingLeft: (theme) => theme.spacing(1),
-          }}>
-            {Chips[state]}
-          </Box>
           <Typography
             variant='overline'
             sx={{
@@ -196,21 +199,31 @@ const ModalContents = forwardRef(function ModalContents(
           </Typography>
         </Stack>
 
-        <IconButton
-          onClick={onClose}
+        <Stack
+          id='modal-contents-top-right'
+          direction='row'
+          spacing={2}
           sx={{
-            color: (theme) => theme.palette.grey[500],
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
-          <CloseIcon />
-        </IconButton>
+          <IconButton
+            onClick={onClose}
+            sx={{
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Stack>
       </Stack>
 
-      <Box sx={{
+      <Box id='modal-contents-body' sx={{
         flexGrow: 1,
         display: 'flex',
         flexDirection: smallScreen ? 'row' : 'column',
-        gap: (theme) => theme.spacing(smallScreen ? 6 : 4),
+        gap: (theme) => theme.spacing(4),
         padding: (theme) => theme.spacing(4),
         paddingTop: 0,
         minWidth: 0,
@@ -222,13 +235,19 @@ const ModalContents = forwardRef(function ModalContents(
   );
 });
 
-function ModalHeader({ children }) {
+function ModalHeader({ children, smallScreen }) {
   return (
     <Stack
-      direction='row'
+      direction={smallScreen ? 'column' : 'row' }
       spacing={2}
       sx={{
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        gap: (theme) => theme.spacing(2),
+        maxHeight: smallScreen ? 'inherit' : '50%',
+        '& > *': {
+          flex: smallScreen ? 'inherit' : '1 1 auto',
+          maxWidth: smallScreen ? 'inherit' : '50%',
+        },
       }}
     >
       {children}
@@ -253,9 +272,28 @@ function Title({ children }) {
   );
 }
 
-function DeployStep() {
+function Subtitle({ children, sx = [] }) {
   return (
-    <Box as='pre' sx={{
+    <Typography
+      as='h2'
+      sx={{
+        fontSize: {
+          xs: '0.8rem',
+          sm: '1rem',
+          md: '1.5rem',
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      }}
+    >
+      {children}
+    </Typography>
+  );
+}
+
+function DeployStep({ showLogs }) {
+  return (!showLogs
+   ? <Typography>deploying</Typography>
+   : <Box as='pre' sx={{
       height: '100%',
       background: '#f4f4f4',
       border: '1px solid #ddd',
@@ -337,74 +375,83 @@ function BetterStepper({
 
   return (
     <>
-      <Stepper
-        activeStep={activeStep}
-        orientation={vertical ? 'vertical' : 'horizontal'}
-        nonLinear // NOTE(dabrady) I'm redefining the linear implementation
-        sx={{
-          // Span full height when vertical
-          height: vertical ? '100%' : 'auto',
-          '& .MuiStepConnector-line': {
-            height: '100%',
-          },
-          // Animate step changes
-          '& .MuiStepConnector-root': {
-            transition: 'flex-basis 0.3s ease',
-            flex: '1 1 0rem',
-          },
-          '& .MuiStep-root:has([aria-current="step"]) + .MuiStepConnector-root': {
-            flexBasis: '100%',
-            '& > .MuiStepConnector-line': {
-              [vertical ? 'borderLeftStyle' : 'borderTopStyle' ]: 'dashed',
-            },
-          },
-          '& .MuiStep-root:not(:has([aria-current="step"])) + .MuiStepConnector-root': {
-          },
-        }}
-      >
-        {stepLabels.map(function renderStep(step, index) {
-          var active = activeStep == index;
-          var completed = completedSteps[index];
-          return (
-            <Step
-              key={index}
-              completed={completed}
-              sx={{
-                '& .MuiStepIcon-root.Mui-completed': {
-                  color: (theme) => active
-                                  ? theme.palette.primary.main
-                                  : theme.palette.text.secondary,
-                },
-              }}
-            >
-
-              <StepButton
-                onClick={() => setActiveStep(index)}
-                disabled={index > 0 && !completedSteps[index - 1]}
-              >
-                <StepLabel>{step}</StepLabel>
-              </StepButton>
-            </Step>
-          );
-        })}
-
-        {/* Adding a 'dangling' connector for aesthetics. */}
-        <DanglingConnector />
-      </Stepper>
-
       <Stack spacing={2} sx={{
         flex: '1 1 100%',
         minWidth: 0,
         minHeight: 0,
       }}>
         {/* NOTE(dabrady) Here is where we render the contents of each step. */}
-        <Box sx={{
-          flex: '1 1 auto',
-          minWidth: 0,
-          minHeight: 0,
-        }}>
-          {children(activeStep, setActiveStep, markStepCompleted)}
-        </Box>
+        <Stack
+          spacing={4}
+          direction={vertical ? 'row' : 'column'}
+          sx={{
+            flex: '1 1 auto',
+            minWidth: 0,
+            minHeight: 0,
+          }}
+        >
+          <Box sx={{
+            flexBasis: '100%',
+            minWidth: 0,
+            minHeight: 0,
+          }}>
+            {children(activeStep, setActiveStep, markStepCompleted)}
+          </Box>
+          <Stepper
+            activeStep={activeStep}
+            orientation={vertical ? 'vertical' : 'horizontal'}
+            nonLinear // NOTE(dabrady) I'm redefining the linear implementation
+            sx={{
+              // Span full height when vertical
+              height: vertical ? '100%' : 'auto',
+              '& .MuiStepConnector-line': {
+                height: '100%',
+              },
+              // Animate step changes
+              '& .MuiStepConnector-root': {
+                transition: 'flex-basis 0.3s ease',
+                flex: '1 1 0rem',
+              },
+              '& .MuiStep-root:has([aria-current="step"]) + .MuiStepConnector-root': {
+                flexBasis: '100%',
+                '& > .MuiStepConnector-line': {
+                  [vertical ? 'borderLeftStyle' : 'borderTopStyle' ]: 'dashed',
+                },
+              },
+              '& .MuiStep-root:not(:has([aria-current="step"])) + .MuiStepConnector-root': {
+              },
+            }}
+          >
+            {stepLabels.map(function renderStep(step, index) {
+              var active = activeStep == index;
+              var completed = completedSteps[index];
+              return (
+                <Step
+                  key={index}
+                  completed={completed}
+                  sx={{
+                    '& .MuiStepIcon-root.Mui-completed': {
+                      color: (theme) => active
+                                      ? theme.palette.primary.main
+                                      : theme.palette.text.secondary,
+                    },
+                  }}
+                >
+
+                  <StepButton
+                    onClick={() => setActiveStep(index)}
+                    disabled={index > 0 && !completedSteps[index - 1]}
+                  >
+                    <StepLabel>{step}</StepLabel>
+                  </StepButton>
+                </Step>
+              );
+            })}
+
+            {/* Adding a 'dangling' connector for aesthetics. */}
+            <DanglingConnector />
+          </Stepper>
+        </Stack>
 
         {/* Footer */}
         <Box
@@ -450,5 +497,79 @@ function DanglingConnector() {
         }
       }}
     />
+  );
+}
+
+function BetterLink({ href, displayText }) {
+  return (
+    <Link
+      href={href}
+      color='inherit'
+      underline='none'
+      target='_blank'
+      rel='noopener'
+      sx={{
+        transition: 'color 0.125s linear',
+        '&:hover': {
+          color: (theme) => theme.palette.primary.main,
+        },
+      }}
+    >
+      {/* Ensure wrapping doesn't separate the icon from the title text. */}
+      {displayText.slice(0, -1)}
+      <Box as='span' sx={{ whiteSpace: 'nowrap' }}>
+        {displayText.slice(-1)}
+        <Box as='sup' sx={{
+          verticalAlign: 'top',
+        }}>
+          <OpenInNewIcon
+            sx={{
+              fontSize: 'max(0.85rem, 50%)',
+              marginLeft: (theme) => theme.spacing(0.2),
+            }}
+          />
+        </Box>
+      </Box>
+    </Link>
+  );
+}
+
+function DataTable({ data }) {
+  return (
+    <TableContainer sx={{
+      width: 'auto',
+    }}>
+      <Table>
+        <TableBody>
+          {Object.keys(data).map(function renderItem(key, index) {
+            var value = data[key];
+            var renderedValue = typeof value == 'function'
+                              ? value()
+                              : (
+                                <Typography
+                                  sx={{
+                                    fontFamily: 'monospace'
+                                  }}
+                                >
+                                  {value}
+                                </Typography>
+                              );
+            return (
+              <TableRow
+                key={index}
+                hover
+              >
+                <TableCell>
+                  <Typography sx={{
+                    //textAlign: 'right',
+                  }}>{key}:</Typography>
+                </TableCell>
+                <TableCell>{renderedValue}</TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
