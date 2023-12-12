@@ -71,7 +71,7 @@ export default function DeploymentModal({
   onClose,
 }: Props) {
   var theme = useTheme();
-  var smallScreen: boolean = useMediaQuery(theme.breakpoints.down('md'));
+  var smallScreen: boolean = useMediaQuery(theme.breakpoints.down('sm'));
   var stepLabels = Object.keys(DEPLOYMENT_STEPS);
   var ticketNumber = title.slice(
     ...(/^\[.*-(?<ticket>\d+)\].*$/d.exec(title)?.indices.groups.ticket ?? [title.length]),
@@ -91,7 +91,6 @@ export default function DeploymentModal({
       }}
     >
       <ModalContents
-        smallScreen={smallScreen}
         state={state}
         timestamp={timestamp.toDate()}
         onClose={onClose}
@@ -105,30 +104,27 @@ export default function DeploymentModal({
           </Stack>
 
           {/* <BetterLink href={authorUrl} displayText={handle} /> */}
-          <DataTable data={{
+          <DataTable smallScreen={smallScreen} data={{
             State: Chips[state],
             Author: () => (
-              <Typography sx={{ fontFamily: 'monospace' }}>
-                <BetterLink href={authorUrl} displayText={handle} />
-              </Typography>
+              <BetterLink sx={{ fontFamily: 'monospace' }} href={authorUrl} displayText={handle} />
             ),
             // TODO(dabrady) make real links once we have 'component config'
             ...(ticketNumber ? {
               Ticket: () => {
                 return (
-                  <Typography sx={{ fontFamily: 'monospace' }}>
-                    <BetterLink
-                      href={`https://trello.com/c/fvVuRsDr/${ticketNumber}`}
-                      displayText={`#${ticketNumber}`}
-                    />
-                  </Typography>
+                  <BetterLink
+                    href={`https://trello.com/c/fvVuRsDr/${ticketNumber}`}
+                    displayText={`#${ticketNumber}`}
+                    sx={{ fontFamily: 'monospace' }}
+                  />
                 );
               },
             } : {}),
           }} />
         </ModalHeader>
 
-        <BetterStepper stepLabels={stepLabels} vertical={smallScreen}>
+        <BetterStepper stepLabels={stepLabels}>
           {function renderActiveStep(activeStep, setActiveStep, markStepCompleted) {
             return DEPLOYMENT_STEPS[stepLabels[activeStep]](smallScreen);
           }}
@@ -166,7 +162,7 @@ const ModalContents = forwardRef(function ModalContents(
 
           maxWidth: (theme) => theme.breakpoints.values.md,
           width: '80%',
-          minWidth: '650px',
+          minWidth: (theme) => theme.breakpoints.values.xs,
           height: '80%',
 
           bgcolor: 'background.paper',
@@ -288,8 +284,8 @@ function Subtitle({ children, sx = [] }) {
       as='h2'
       sx={{
         fontSize: {
-          xs: '0.8rem',
-          sm: '1rem',
+          xs: '1rem',
+          sm: '1.2rem',
           md: '1.5rem',
         },
         ...(Array.isArray(sx) ? sx : [sx]),
@@ -365,9 +361,16 @@ Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7
 function VerifyStep() {
   return (
     <>
-      <Subtitle>
+      <Typography
+        sx={{
+          fontSize: {
+            xs: '1rem',
+            md: '1.5rem',
+          },
+        }}
+      >
         Go to <BetterLink href='#' displayText='theexample.com' /> to verify your changes.
-      </Subtitle>
+      </Typography>
       <Typography sx={{ paddingTop: (theme) => theme.spacing(2) }}>Relevant links:</Typography>
       <Box as='ul' sx={{
         '& li': {
@@ -427,6 +430,7 @@ function BetterStepper({
             flexBasis: '100%',
             minWidth: 0,
             minHeight: 0,
+            overflow: 'auto',
           }}>
             {children(activeStep, setActiveStep, markStepCompleted)}
           </Box>
@@ -450,8 +454,6 @@ function BetterStepper({
                 '& > .MuiStepConnector-line': {
                   [vertical ? 'borderLeftStyle' : 'borderTopStyle' ]: 'dashed',
                 },
-              },
-              '& .MuiStep-root:not(:has([aria-current="step"])) + .MuiStepConnector-root': {
               },
             }}
           >
@@ -533,7 +535,7 @@ function DanglingConnector() {
   );
 }
 
-function BetterLink({ href, displayText }) {
+function BetterLink({ href, displayText, sx = [] }) {
   return (
     <Link
       href={href}
@@ -541,12 +543,15 @@ function BetterLink({ href, displayText }) {
       underline='none'
       target='_blank'
       rel='noopener'
-      sx={{
-        transition: 'color 0.125s linear',
-        '&:hover': {
-          color: (theme) => theme.palette.primary.main,
+      sx={[
+        {
+          transition: 'color 0.125s linear',
+          '&:hover': {
+            color: (theme) => theme.palette.primary.main,
+          },
         },
-      }}
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       {/* Ensure wrapping doesn't separate the icon from the title text. */}
       {displayText.slice(0, -1)}
@@ -567,37 +572,28 @@ function BetterLink({ href, displayText }) {
   );
 }
 
-function DataTable({ data }) {
+function DataTable({ data, smallScreen }) {
   return (
     <TableContainer sx={{
       width: 'auto',
     }}>
       <Table>
-        <TableBody>
+        <TableBody sx={{
+          '& td': {
+            padding: (theme) => theme.spacing(1.5),
+          },
+        }}>
           {Object.keys(data).map(function renderItem(key, index) {
             var value = data[key];
             var renderedValue = typeof value == 'function'
-                              ? value()
-                              : (
-                                <Typography
-                                  as='div'
-                                  sx={{
-                                    fontFamily: 'monospace'
-                                  }}
-                                >
-                                  {value}
-                                </Typography>
-                              );
+              ? value()
+              : <code>{value}</code>;
             return (
               <TableRow
                 key={index}
                 hover
               >
-                <TableCell>
-                  <Typography sx={{
-                    //textAlign: 'right',
-                  }}>{key}:</Typography>
-                </TableCell>
+                <TableCell>{key}:</TableCell>
                 <TableCell>{renderedValue}</TableCell>
               </TableRow>
             );
