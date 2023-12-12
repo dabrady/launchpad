@@ -363,7 +363,30 @@ Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7
 }
 
 function VerifyStep() {
-  return <Typography>verifying</Typography>;
+  return (
+    <>
+      <Subtitle>
+        Go to <BetterLink href='#' displayText='theexample.com' /> to verify your changes.
+      </Subtitle>
+      <Typography sx={{ paddingTop: (theme) => theme.spacing(2) }}>Relevant links:</Typography>
+      <Box as='ul' sx={{
+        '& li': {
+          paddingLeft: (theme) => theme.spacing(2),
+          marginLeft: (theme) => theme.spacing(2),
+        }
+      }}>
+        <li>
+          <BetterLink href='#' displayText='Backend server logs' />
+        </li>
+        <li>
+          <BetterLink href='#' displayText='Client-side error monitoring' />
+        </li>
+        <li>
+          <BetterLink href='#' displayText='Application performance dashboard' />
+        </li>
+      </Box>
+    </>
+  );
 }
 
 function MergeStep() {
