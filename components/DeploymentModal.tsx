@@ -75,7 +75,7 @@ export default function DeploymentModal({
   var stepLabels = Object.keys(DEPLOYMENT_STEPS);
   // TODO(dabrady) Slice this off the title before displaying
   var ticketNumber = title.slice(
-    ...(/^\[TRELLO-(?<ticket>\d+)\].*$/d.exec(title)?.indices.groups.ticket ?? [title.length]),
+    ...(/^\[.*-(?<ticket>\d+)\].*$/d.exec(title)?.indices.groups.ticket ?? [title.length]),
   );
 
   return (
@@ -110,9 +110,9 @@ export default function DeploymentModal({
                 <BetterLink href={authorUrl} displayText={handle} />
               </Typography>
             ),
-            // TODO(dabrady) make real links
+            // TODO(dabrady) make real links once we have 'component config'
             ...(ticketNumber ? {
-              Trello: () => {
+              Ticket: () => {
                 return (
                   <Typography sx={{ fontFamily: 'monospace' }}>
                     <BetterLink
