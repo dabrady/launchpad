@@ -555,6 +555,7 @@ function DataTable({ data }) {
                               ? value()
                               : (
                                 <Typography
+                                  as='div'
                                   sx={{
                                     fontFamily: 'monospace'
                                   }}
