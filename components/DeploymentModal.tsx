@@ -73,10 +73,12 @@ export default function DeploymentModal({
   var theme = useTheme();
   var smallScreen: boolean = useMediaQuery(theme.breakpoints.down('md'));
   var stepLabels = Object.keys(DEPLOYMENT_STEPS);
-  // TODO(dabrady) Slice this off the title before displaying
   var ticketNumber = title.slice(
     ...(/^\[.*-(?<ticket>\d+)\].*$/d.exec(title)?.indices.groups.ticket ?? [title.length]),
   );
+  var massagedTitle = ticketNumber
+    ? title.slice(title.indexOf(']') + 1).trim()
+    : title;
 
   return (
     <Modal
@@ -99,7 +101,7 @@ export default function DeploymentModal({
             <Title>
               <BetterLink href={url} displayText={displayName}/>
             </Title>
-            <Subtitle>{title}</Subtitle>
+            <Subtitle>{massagedTitle}</Subtitle>
           </Stack>
 
           {/* <BetterLink href={authorUrl} displayText={handle} /> */}
