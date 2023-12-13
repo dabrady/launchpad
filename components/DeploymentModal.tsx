@@ -426,14 +426,6 @@ function BetterStepper({
             minHeight: 0,
           }}
         >
-          <Box sx={{
-            flexBasis: '100%',
-            minWidth: 0,
-            minHeight: 0,
-            overflow: 'auto',
-          }}>
-            {children(activeStep, setActiveStep, markStepCompleted)}
-          </Box>
           <Stepper
             activeStep={activeStep}
             orientation={vertical ? 'vertical' : 'horizontal'}
@@ -486,6 +478,14 @@ function BetterStepper({
             {/* Adding a 'dangling' connector for aesthetics. */}
             <DanglingConnector />
           </Stepper>
+          <Box sx={{
+            flexBasis: '100%',
+            minWidth: 0,
+            minHeight: 0,
+            overflow: 'auto',
+          }}>
+            {children(activeStep, setActiveStep, markStepCompleted)}
+          </Box>
         </Stack>
 
         {/* Footer */}
