@@ -35,9 +35,9 @@ import { Deployment } from '@/app/types';
 import { Chips } from '@/components/constants';
 
 const DEPLOYMENT_STEPS = {
-  Deploy: (smallScreen) => <DeployStep showLogs={!smallScreen}/>,
-  Verify: (smallScreen) => <VerifyStep />,
-  Merge: (smallScreen) => <MergeStep />,
+  Deploy: ({ smallScreen, ...rest }) => <DeployStep showLogs={!smallScreen} {...rest}/>,
+  Verify: ({ smallScreen }) => <VerifyStep />,
+  Merge: ({ smallScreen }) => <MergeStep />,
 };
 
 interface Props {
@@ -126,7 +126,12 @@ export default function DeploymentModal({
 
         <BetterStepper stepLabels={stepLabels}>
           {function renderActiveStep(activeStep, setActiveStep, markStepCompleted) {
-            return DEPLOYMENT_STEPS[stepLabels[activeStep]](smallScreen);
+            return DEPLOYMENT_STEPS[stepLabels[activeStep]]({
+              smallScreen,
+              activeStep,
+              setActiveStep,
+              markStepCompleted,
+            });
           }}
         </BetterStepper>
       </ModalContents>
@@ -230,8 +235,10 @@ const ModalContents = forwardRef(function ModalContents(
         display: 'flex',
         flexDirection: smallScreen ? 'row' : 'column',
         gap: (theme) => theme.spacing(4),
-        padding: (theme) => theme.spacing(4),
         paddingTop: 0,
+        paddingBottom: (theme) => theme.spacing(2),
+        paddingLeft: (theme) => theme.spacing(4),
+        paddingRight: (theme) => theme.spacing(4),
         minWidth: 0,
         minHeight: 0,
       }}>
@@ -296,23 +303,29 @@ function Subtitle({ children, sx = [] }) {
   );
 }
 
-function DeployStep({ showLogs }) {
-  return (!showLogs
-   ? <Typography>deploying</Typography>
-   : <Box as='pre' sx={{
-      height: '100%',
-      background: '#f4f4f4',
-      border: '1px solid #ddd',
-      borderRadius: '6px',
-      color: (theme) => theme.palette.text.secondary,
+function DeployStep({ showLogs, activeStep, setActiveStep, markStepCompleted }) {
+  return (
+    <Stack sx={{
+      flex: 1,
+      justifyContent: 'space-between',
       overflow: 'auto',
-      fontSize: {
-        xs: '0.65rem',
-        md: '0.85rem',
-      },
-      padding: (theme) => theme.spacing(2),
     }}>
-  {`
+      {!showLogs
+        ? <Typography>deploying</Typography>
+        : <Box as='pre' sx={{
+          height: '100%',
+          background: '#f4f4f4',
+          border: '1px solid #ddd',
+          borderRadius: '6px',
+          color: (theme) => theme.palette.text.secondary,
+          overflow: 'auto',
+          fontSize: {
+            xs: '0.65rem',
+            md: '0.85rem',
+          },
+          padding: (theme) => theme.spacing(2),
+        }}>
+          {`
 Dec 10  01:26:30.830  modal function -- Beginning consume_human_response_firebase at 2023-12-10 01:26:30.829870
 Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:03.099322 seconds
 Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
@@ -353,8 +366,33 @@ Dec 10  01:26:30.830  we have generated the new interview message, it took 0:00:
 Dec 10  01:26:30.830  modal function -- ending consume_human_response_firebase at 2023-12-10 01:26:40.304119 a difference of 0:00:09.474249
 Dec 10  01:26:30.830  200
 Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7 ms, first-byte latency: 12448.4 ms)
-  `.trim()}
-    </Box>
+          `.trim()}
+        </Box> }
+
+      <ModalActions>
+        {/* <Button
+            disabled={activeStep == 0}
+            onClick={() => setActiveStep((prev) => prev - 1)}
+            >
+            Back
+            </Button> */}
+        <Box sx={{ flex: '1 1 auto' }} />
+        <Button
+          //disabled={completedSteps[activeStep]}
+          onClick={() => {
+            markStepCompleted(activeStep);
+          }}
+        >
+          Complete
+        </Button>
+        <Button
+          //disabled={activeStep == (stepLabels.length - 1) || !completedSteps[activeStep]}
+          onClick={() => setActiveStep((prev) => prev + 1)}
+        >
+          Next
+        </Button>
+      </ModalActions>
+    </Stack>
   );
 }
 
@@ -467,7 +505,7 @@ function BetterStepper({
 
                   <StepButton
                     onClick={() => setActiveStep(index)}
-                    disabled={index > 0 && !completedSteps[index - 1]}
+                    //disabled={index > 0 && !completedSteps[index - 1]}
                   >
                     <StepLabel>{step}</StepLabel>
                   </StepButton>
@@ -478,48 +516,62 @@ function BetterStepper({
             {/* Adding a 'dangling' connector for aesthetics. */}
             <DanglingConnector />
           </Stepper>
-          <Box sx={{
+          <Stack sx={{
             flexBasis: '100%',
             minWidth: 0,
             minHeight: 0,
             overflow: 'auto',
           }}>
             {children(activeStep, setActiveStep, markStepCompleted)}
-          </Box>
+          </Stack>
         </Stack>
 
         {/* Footer */}
-        <Box
-          sx={{
+        {/* <Box
+            sx={{
             display: 'flex',
             flexDirection: 'row',
             paddingTop: (theme) => theme.spacing(2),
-          }}
-        >
-          <Button
+            }}
+            >
+            <Button
             disabled={activeStep == 0}
             onClick={() => setActiveStep((prev) => prev - 1)}
-          >
+            >
             Back
-          </Button>
-          <Box sx={{ flex: '1 1 auto' }} />
-          <Button
+            </Button>
+            <Box sx={{ flex: '1 1 auto' }} />
+            <Button
             disabled={completedSteps[activeStep]}
             onClick={() => {
-              markStepCompleted(activeStep);
+            markStepCompleted(activeStep);
             }}
-          >
+            >
             Complete
-          </Button>
-          <Button
+            </Button>
+            <Button
             disabled={activeStep == (stepLabels.length - 1) || !completedSteps[activeStep]}
             onClick={() => setActiveStep((prev) => prev + 1)}
-          >
+            >
             Next
-          </Button>
-        </Box>
+            </Button>
+            </Box> */}
       </Stack>
     </>
+  );
+}
+
+function ModalActions({ children }) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        paddingTop: (theme) => theme.spacing(2),
+      }}
+    >
+      {children}
+    </Box>
   );
 }
 
