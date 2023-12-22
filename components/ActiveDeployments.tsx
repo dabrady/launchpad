@@ -126,7 +126,14 @@ export default function ActiveDeployments({ components }: Props) {
         ),
       }}
       sx={{
-        border: 'none'
+        // Hide all the outlines
+        border: 'none',
+        '& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-cell:focus': {
+          outline: 'none',
+        },
+        '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
+          outline: 'none',
+        },
       }}
     />
   );
