@@ -85,10 +85,12 @@ export default function DeploymentModal({
       id='modal-frame'
       keepMounted // TODO(dabrady) Don't do this, reinitialize state from database
       open={open}
-      onClose={function disableBackdropClick(ev, reason: 'escapeKeyDown'|'backdropClick') {
-        if (reason == 'backdropClick') return;
-        onClose();
-      }}
+      onClose={
+        function disableBackdropClick(ev, reason: 'escapeKeyDown'|'backdropClick') {
+          if (reason == 'backdropClick') return;
+          onClose();
+        }
+      }
     >
       <ModalContents
         state={state}
@@ -125,11 +127,10 @@ export default function DeploymentModal({
         </ModalHeader>
 
         <BetterStepper stepLabels={stepLabels}>
-          {function renderActiveStep(activeStep, setActiveStep, markStepCompleted) {
+          {function renderActiveStep(activeStep, markStepCompleted) {
             return DEPLOYMENT_STEPS[stepLabels[activeStep]]({
               smallScreen,
               activeStep,
-              setActiveStep,
               markStepCompleted,
             });
           }}
@@ -303,7 +304,11 @@ function Subtitle({ children, sx = [] }) {
   );
 }
 
-function DeployStep({ showLogs, activeStep, setActiveStep, markStepCompleted }) {
+function DeployStep({
+  showLogs,
+  activeStep,
+  markStepCompleted,
+}) {
   return (
     <Stack sx={{
       flex: 1,
@@ -370,24 +375,12 @@ Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7
         </Box> }
 
       <ModalActions>
-        {/* <Button
-            disabled={activeStep == 0}
-            onClick={() => setActiveStep((prev) => prev - 1)}
-            >
-            Back
-            </Button> */}
         <Box sx={{ flex: '1 1 auto' }} />
         <Button
           //disabled={completedSteps[activeStep]}
           onClick={() => {
             markStepCompleted(activeStep);
           }}
-        >
-          Complete
-        </Button>
-        <Button
-          //disabled={activeStep == (stepLabels.length - 1) || !completedSteps[activeStep]}
-          onClick={() => setActiveStep((prev) => prev + 1)}
         >
           Next
         </Button>
@@ -445,6 +438,7 @@ function BetterStepper({
   } >({});
   function markStepCompleted(step) {
     setCompletedSteps((prev) => ({ ...prev, [step]: true }));
+    setActiveStep((prev) => prev + 1);
   }
 
   return (
@@ -522,40 +516,9 @@ function BetterStepper({
             minHeight: 0,
             overflow: 'auto',
           }}>
-            {children(activeStep, setActiveStep, markStepCompleted)}
+            {children(activeStep, markStepCompleted)}
           </Stack>
         </Stack>
-
-        {/* Footer */}
-        {/* <Box
-            sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            paddingTop: (theme) => theme.spacing(2),
-            }}
-            >
-            <Button
-            disabled={activeStep == 0}
-            onClick={() => setActiveStep((prev) => prev - 1)}
-            >
-            Back
-            </Button>
-            <Box sx={{ flex: '1 1 auto' }} />
-            <Button
-            disabled={completedSteps[activeStep]}
-            onClick={() => {
-            markStepCompleted(activeStep);
-            }}
-            >
-            Complete
-            </Button>
-            <Button
-            disabled={activeStep == (stepLabels.length - 1) || !completedSteps[activeStep]}
-            onClick={() => setActiveStep((prev) => prev + 1)}
-            >
-            Next
-            </Button>
-            </Box> */}
       </Stack>
     </>
   );
