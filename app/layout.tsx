@@ -6,26 +6,17 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider } from '@mui/material/styles';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
 
 import '@/app/globals.css';
-import theme from '@/app/theme';
 import {
   TargetEnvironment,
   TargetEnvironmentProvider,
 } from '@/components/TargetEnvironment';
 
-const inter = Inter({ subsets: ['latin'] });
+import SystemThemeProvider from './SystemThemeProvider';
 
 export const metadata: Metadata = {
   title: 'Launchpad',
@@ -39,10 +30,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline enableColorScheme />
+          <SystemThemeProvider>
             <TargetEnvironmentProvider>
               <AppBar>
                 <Toolbar>
@@ -60,7 +50,7 @@ export default function RootLayout({
               </AppBar>
               {children}
             </TargetEnvironmentProvider>
-          </ThemeProvider>
+          </SystemThemeProvider>
         </AppRouterCacheProvider>
       </body>
     </html>

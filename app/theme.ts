@@ -1,32 +1,77 @@
-'use client';
-
 import { Roboto } from 'next/font/google';
-import { createTheme } from '@mui/material/styles';
+import { ThemeOptions } from '@mui/material/styles';
 
-const roboto = Roboto({
+const LIGHT_PALETTE: ThemeOptions = {
+  mode: 'light',
+  primary: {
+    main: '#006e08',
+  },
+  secondary: {
+    main: '#53634e',
+  },
+  error: {
+    main: '#ba1a1a',
+  },
+  warning: {
+    main: '#ba1a1a',
+  },
+  success: {
+    main: '#386569',
+  },
+  info: {
+    main: '#90918c',
+  },
+  background: {
+    default: '#fcfdf6',
+    paper: '#fcfdf6',
+  },
+  text: {
+    primary: '#1a1c18',
+    secondary: '#1a1c18',
+    disabled: '#43493f',
+  },
+  divider: '#dfe4d8',
+};
+
+const DARK_PALETTE: ThemeOptions = {
+  mode: 'dark',
+  primary: {
+    main: '#7cdc6c',
+  },
+  secondary: {
+    main: '#bbcbb2',
+  },
+  info: {
+    main: '#90918c',
+  },
+  error: {
+    main: '#ffb4ab',
+  },
+  warning: {
+    main: '#ffb4ab',
+  },
+  success: {
+    main: '#a0cfd2',
+  },
+  background: {
+    default: '#1a1c18',
+    paper: '#1a1c18',
+  },
+  text: {
+    primary: '#e2e3dd',
+    secondary: '#e2e3dd',
+    disabled: '#c2c8bc',
+  },
+  divider: '#43493f',
+};
+
+export const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
   subsets: ['latin'],
   display: 'swap',
 });
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-  },
-  typography: {
-    fontFamily: roboto.style.fontFamily,
-  },
-  components: {
-    MuiAlert: {
-      styleOverrides: {
-        root: ({ ownerState }) => ({
-          ...(ownerState.severity === 'info' && {
-            backgroundColor: '#60a5fa',
-          }),
-        }),
-      },
-    },
-  },
-});
-
-export default theme;
+export function getColorPalette(mode: 'light'|'dark') {
+  if (mode == 'light') return LIGHT_PALETTE;
+  return DARK_PALETTE;
+}
