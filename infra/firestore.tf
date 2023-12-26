@@ -20,7 +20,7 @@ resource "google_firestore_database" "default" {
 
 
 resource "google_firestore_field" "ttl" {
-  field = "ttl"
+  field = "created_at"
   project = google_project.default.project_id
   collection = local.collections.deployments
 

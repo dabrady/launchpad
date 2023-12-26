@@ -24,11 +24,11 @@ provider "google-beta" {
 ############################
 
 data "google_organization" "org" {
-  domain = "theapply.ai"
+  domain = "scrappy-poet.com"
 }
 
 data "google_billing_account" "billing" {
-  display_name = "(brady's sandbox -- uses personal card)"
+  display_name = "My Billing Account"
   open         = true
 }
 
@@ -36,8 +36,8 @@ resource "google_project" "default" {
   # Use the provider that enables the setup of quota checks for a new project
   provider   = google-beta.no_user_project_override
 
-  name                = "-- brady sandbox --"
-  project_id          = "brady-sandbox-877da"
+  name                = "Launchpad"
+  project_id          = "launchpad-2e510"
 
   # Required for any service that requires the Blaze pricing plan
   # (like Firebase Authentication with GCIP)
