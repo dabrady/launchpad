@@ -6,12 +6,12 @@ import {
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: "AIzaSyBRdum-eBB1GDhg4YrfMPNVlsI21OFe_jk",
-  authDomain: "brady-sandbox-877da.firebaseapp.com",
-  projectId: "brady-sandbox-877da",
-  storageBucket: "brady-sandbox-877da.appspot.com",
-  messagingSenderId: "148555366920",
-  appId: "1:148555366920:web:40ce542bfbd5ae0243c7bd"
+  apiKey: "AIzaSyBDfuQqSECA3H8KCF4afIArtG0-G69r1as",
+  authDomain: "launchpad-2e510.firebaseapp.com",
+  projectId: "launchpad-2e510",
+  storageBucket: "launchpad-2e510.appspot.com",
+  messagingSenderId: "382262848299",
+  appId: "1:382262848299:web:bcea83b666a342c410f36e"
 };
 
 export const firebase = (function createFirebaseApp(config: FirebaseOptions) {
