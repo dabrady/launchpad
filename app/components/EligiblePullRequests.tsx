@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@mui/material';
 
-import { PullRequest, PullRequestState } from '@/app/types';
+import { PullRequest, PullRequestState } from '@/types';
 import { Chips } from '@/components/constants';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import usePullRequests from '@/components/utils/usePullRequests';

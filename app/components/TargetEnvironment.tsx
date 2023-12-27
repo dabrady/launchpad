@@ -10,7 +10,7 @@ import {
 
 import { createContext, useContext, useState } from "react";
 
-import { Environment } from '@/app/types';
+import { Environment } from '@/types';
 import { members, labelOf } from '@/components/utils/typescript';
 
 export const TargetEnvironmentContext = createContext({

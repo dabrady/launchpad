@@ -17,12 +17,13 @@ import {
 
 import { useState } from 'react';
 
-import { Deployment as TDeployment, DeploymentState, Environment } from '@/app/types';
+import { auth } from "#/firebase";
+
+import { Deployment as TDeployment, DeploymentState, Environment } from '@/types';
 import { Chips } from '@/components/constants';
-import DeploymentModal from '/components/DeploymentModal';
+import DeploymentModal from '@/components/DeploymentModal';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import { useActiveDeployments } from '@/components/utils/useDeployments';
-import { auth } from "@/firebase";
 
 interface Props {
   components: string[];

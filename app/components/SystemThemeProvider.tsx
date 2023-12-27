@@ -8,7 +8,7 @@ import {
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-import { getColorPalette, roboto } from '@/app/theme';
+import { getColorPalette, roboto } from '@/theme';
 
 export default function SystemThemeProvider({ children }) {
   var prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');

@@ -1,6 +1,6 @@
 import { Chip, ChipProps } from '@mui/material';
 
-import { DeploymentState, PullRequestState } from '@/app/types';
+import { DeploymentState, PullRequestState } from '@/types';
 
 function MonoChip(props: ChipProps) {
   return <Chip sx={{ fontFamily: "monospace"}} {...props}/>;

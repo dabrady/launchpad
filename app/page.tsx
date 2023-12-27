@@ -11,12 +11,14 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 
+import { auth, GoogleAuthProvider } from "#/firebase";
+
 import {
   Environment,
   DeploymentState,
   PullRequest,
   PullRequestState,
-} from '@/app/types';
+} from '@/types';
 import {
   AcceptButton,
   CancelButton,
@@ -28,8 +30,6 @@ import ActiveDeployments from '@/components/ActiveDeployments';
 import EligiblePullRequests from '@/components/EligiblePullRequests';
 import DeploymentHistory from '@/components/DeploymentHistory';
 import useAuth from '@/components/utils/useAuth';
-
-import { auth, GoogleAuthProvider } from "@/firebase";
 
 import styles from './page.module.css';
 

@@ -13,12 +13,13 @@ import {
 
 import { useState } from 'react';
 
-import { DeploymentState, Environment, PullRequestState } from '@/app/types'
+import { auth } from "#/firebase";
+
+import { DeploymentState, Environment, PullRequestState } from '@/types';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
 import { labelOf } from '@/components/utils/typescript';
 import { createDeployment, useActiveDeployments } from '@/components/utils/useDeployments';
 import { judgePullRequests, updatePullRequest } from '@/components/utils/usePullRequests';
-import { auth } from "@/firebase";
 
 export function DeployButton({ pullRequest }) {
   var {

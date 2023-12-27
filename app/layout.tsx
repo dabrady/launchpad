@@ -10,13 +10,12 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 
 import type { Metadata } from 'next';
 
-import '@/app/globals.css';
+import '@/globals.css';
+import SystemThemeProvider from '@/components/SystemThemeProvider';
 import {
   TargetEnvironment,
   TargetEnvironmentProvider,
 } from '@/components/TargetEnvironment';
-
-import SystemThemeProvider from './SystemThemeProvider';
 
 export const metadata: Metadata = {
   title: 'Launchpad',

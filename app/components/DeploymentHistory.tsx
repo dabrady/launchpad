@@ -9,10 +9,11 @@ import {
   TableRow,
 } from '@mui/material';
 
-import { DeploymentState, Environment } from '@/app/types';
+import { auth } from "#/firebase";
+
+import { DeploymentState, Environment } from '@/types';
 import { Chips } from '@/components/constants';
 import { useTargetEnvironment } from '@/components/TargetEnvironment';
-import { auth } from "@/firebase";
 
 var MOCK_DATA = [
   {

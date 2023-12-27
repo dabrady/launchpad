@@ -31,7 +31,7 @@ import { styled, useTheme } from '@mui/material/styles';
 
 import { forwardRef } from 'react';
 
-import { Deployment } from '@/app/types';
+import { Deployment } from '@/types';
 import { Chips } from '@/components/constants';
 
 const DEPLOYMENT_STEPS = {

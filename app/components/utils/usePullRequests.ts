@@ -14,8 +14,9 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from "react";
 
-import { Environment, RawPullRequest, PullRequest, PullRequestState } from '@/app/types';
-import { firestore } from '@/firebase';
+import { firestore } from '#/firebase';
+
+import { Environment, RawPullRequest, PullRequest, PullRequestState } from '@/types';
 
 function subscribe(
   componentId: string,
