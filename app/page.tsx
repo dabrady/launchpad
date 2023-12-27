@@ -25,11 +25,11 @@ import {
   DeployButton,
   RejectButton,
   RevertButton,
-} from '@/components/action-buttons';
-import ActiveDeployments from '@/components/ActiveDeployments';
-import EligiblePullRequests from '@/components/EligiblePullRequests';
-import DeploymentHistory from '@/components/DeploymentHistory';
-import useAuth from '@/components/utils/useAuth';
+} from '@/_components/action-buttons';
+import ActiveDeployments from '@/_components/ActiveDeployments';
+import EligiblePullRequests from '@/_components/EligiblePullRequests';
+import DeploymentHistory from '@/_components/DeploymentHistory';
+import useAuth from '@/_components/utils/useAuth';
 
 import styles from './page.module.css';
 

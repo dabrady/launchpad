@@ -32,7 +32,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { forwardRef } from 'react';
 
 import { Deployment } from '@/types';
-import { Chips } from '@/components/constants';
+import { Chips } from '@/_components/constants';
 
 const DEPLOYMENT_STEPS = {
   Deploy: ({ smallScreen, ...rest }) => <DeployStep showLogs={!smallScreen} {...rest}/>,

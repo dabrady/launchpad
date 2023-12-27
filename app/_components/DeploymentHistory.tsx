@@ -12,8 +12,8 @@ import {
 import { auth } from "#/firebase";
 
 import { DeploymentState, Environment } from '@/types';
-import { Chips } from '@/components/constants';
-import { useTargetEnvironment } from '@/components/TargetEnvironment';
+import { Chips } from '@/_components/constants';
+import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 
 var MOCK_DATA = [
   {

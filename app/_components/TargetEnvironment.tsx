@@ -11,7 +11,7 @@ import {
 import { createContext, useContext, useState } from "react";
 
 import { Environment } from '@/types';
-import { members, labelOf } from '@/components/utils/typescript';
+import { members, labelOf } from '@/_components/utils/typescript';
 
 export const TargetEnvironmentContext = createContext({
   targetEnv: Environment.STAGING,

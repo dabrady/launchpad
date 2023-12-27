@@ -16,10 +16,10 @@ import { useState } from 'react';
 import { auth } from "#/firebase";
 
 import { DeploymentState, Environment, PullRequestState } from '@/types';
-import { useTargetEnvironment } from '@/components/TargetEnvironment';
-import { labelOf } from '@/components/utils/typescript';
-import { createDeployment, useActiveDeployments } from '@/components/utils/useDeployments';
-import { judgePullRequests, updatePullRequest } from '@/components/utils/usePullRequests';
+import { useTargetEnvironment } from '@/_components/TargetEnvironment';
+import { labelOf } from '@/_components/utils/typescript';
+import { createDeployment, useActiveDeployments } from '@/_components/utils/useDeployments';
+import { judgePullRequests, updatePullRequest } from '@/_components/utils/usePullRequests';
 
 export function DeployButton({ pullRequest }) {
   var {

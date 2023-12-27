@@ -14,9 +14,9 @@ import {
 } from '@mui/material';
 
 import { PullRequest, PullRequestState } from '@/types';
-import { Chips } from '@/components/constants';
-import { useTargetEnvironment } from '@/components/TargetEnvironment';
-import usePullRequests from '@/components/utils/usePullRequests';
+import { Chips } from '@/_components/constants';
+import { useTargetEnvironment } from '@/_components/TargetEnvironment';
+import usePullRequests from '@/_components/utils/usePullRequests';
 
 interface Props {
   components: string[];
