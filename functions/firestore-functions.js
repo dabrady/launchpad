@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase-admin/app';
 import {
   getFirestore,
   FieldValue,
+  Timestamp,
 } from 'firebase-admin/firestore';
 
 import * as logger from 'firebase-functions/logger';
@@ -121,7 +122,7 @@ export async function registerPullRequest(pullRequest) {
               name: repo.name,
               owner: repo.owner.login,
             },
-            timestamp: FieldValue.serverTimestamp(),
+            created_at: FieldValue.serverTimestamp(),
             // Indicate this PR is not currently involved in a deployment
             enqueued: false,
           },
@@ -203,16 +204,19 @@ export async function createNewDeployables({
     .then(
       function checkResults(results) {
         var index = -1;
-        for (var { status, reason } of results) {
+        var newDeployables = [];
+        for (var { reason, status, value } of results) {
           index += 1;
           if (status == 'fulfilled') {
-            continue;
+            newDeployables.push(value);
+          } else {
+            var repo = repositories[index];
+            logger.error(
+              `Deployable was not created for '${repo.full_name}': ${reason}`
+            );
           }
-          var repo = repositories[index];
-          logger.error(
-            `Deployable was not created for '${repo.full_name}': ${reason}`
-          );
         }
+        return newDeployables;
       },
     );
 
@@ -249,17 +253,32 @@ export async function createNewDeployables({
             function ensureComponentExists(componentDoc) {
               logger.debug(`checking if '${componentRef.path}' exists`);
               if (componentDoc.exists) {
-                logger.debug('already exists, skipping');
-                return Promise.resolve();
+                var message = 'already exists';
+                logger.info(`${message}, skipping`);
+                return Promise.reject(message);
               }
+
               logger.debug(`creating new component -> ${componentRef.path}`);
-              return transaction.create(
+              transaction.create(
                 componentRef,
                 makeDeployableComponent(repo),
               );
+
+              return componentRef;
             },
           );
       },
+    ).then(
+      // NOTE(dabrady) Some values are created by the Firestore server, so
+      // we need to lookup the record we just created to get the full data.
+      function getNewDeployable(componentRef) {
+        return componentRef.get()
+          .then(
+            function getData(docSnapshot) {
+              return docSnapshot.data();
+            }
+          ).then(serialize);
+      }
     );
   }
 
@@ -273,6 +292,7 @@ export async function createNewDeployables({
     // TODO(dabrady) Define and enforce a schema.
     return {
       id: id.toString(),
+      created_at: FieldValue.serverTimestamp(),
       installation_id: installationId.toString(),
       full_name,
       name,
@@ -295,4 +315,20 @@ export async function createNewDeployables({
       // ... What else?
     };
   }
+}
+
+/** Some Firestore values need transformed before returning the record as JSON. */
+function serialize(record) {
+  return Object.keys(record).reduce(
+    function serializeValue(cereal, key) {
+      var value = record[key];
+      if (value instanceof Timestamp) {
+        cereal[key] = value.toDate().toString();
+      } else {
+        cereal[key] = value;
+      }
+      return cereal;
+    },
+    {},
+  );
 }
