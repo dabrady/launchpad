@@ -6,7 +6,6 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { useSearchParams } from 'next/navigation';
 
 import styles from './page.module.css';
 
@@ -14,7 +13,6 @@ import AppBar from '@/_components/AppBar';
 import { AUTH_CONTEXT } from '@/_components/AuthProvider';
 
 export default function NewDeployConfig() {
-  var searchParams = useSearchParams();
   var currentUser = useContext(AUTH_CONTEXT);
 
   if (!currentUser) {

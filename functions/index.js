@@ -61,7 +61,7 @@ export const install = onRequest(
        * we create.
        */
       // setup_action,
-    } = request.query;
+    } = request.body;
 
     await findInstallation(app, code, installationId)
       .then(
