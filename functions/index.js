@@ -5,11 +5,11 @@ import * as logger from 'firebase-functions/logger';
 import { App } from 'octokit';
 
 import {
+  createNewDeployables,
   disqualify,
   registerOrUpdate,
 } from './firestore-functions.js';
 import {
-  findInstallation,
   isDeployable as _isDeployable,
 } from './helpers.js';
 
@@ -49,7 +49,7 @@ export const install = onCall(
       code,
       installation_id: installationId,
       /**
-       * NOTE(dabardy) This is either 'install' or 'update'. We want to handle both,
+       * NOTE(dabrady) This is either 'install' or 'update'. We want to handle both,
        * to allow users to add/remove repos incrementally. To do that, we'll need to 'diff'
        * the set of repos the installation covers and add/remove accordingly. And to
        * do _that_, we need to ensure we associate the installation ID with the configs
@@ -58,24 +58,79 @@ export const install = onCall(
       // setup_action,
     } = request.data;
 
-    await findInstallation(app, code, installationId)
-      .then(
-        function validateInstallation(installation) {
-          logger.log(`Validating app installation '${installationId}'`);
-          if (installation) {
-            logger.log('we good');
-          } else {
-            logger.log('nope');
-            throw new HttpsError('permission-denied');
-          }
-        },
-      )
+    return await findInstallation()
+      .then(validateInstallation)
+      .then(getInstallationOctokit)
+      .then(listReposAccessibleToInstallation)
+      .then(createNewDeployables)
       .catch(
         function internalError(error) {
           logger.error('Something went wrong validating the installation', error);
           throw error;
         },
       );
+
+    /******/
+
+    /**
+     * This uses the given temporary user access code to access the GitHub App installations
+     * owned by a user and locate a specific one. If no match is found, the installation is
+     * either inaccessible to the user (indicating some form of phishing attack) or does
+     * not exist (again, indicating some form of phishing attack).
+     */
+    async function findInstallation() {
+      return app.oauth.getUserOctokit({ code })
+        .then(
+          // NOTE(dabrady) This is paginated, default page size is something like 30.
+          // If the user owns more than 30 app installations, this may return false
+          // negatives. But I'm not going to deal with pagination right now, most users'
+          // installations probably fall on the first page.
+          function listInstallations(octokit) {
+            return octokit.rest.apps.listInstallationsForAuthenticatedUser();
+          },
+        )
+        .then(
+          function findTheOne({ data: { installations }})  {
+            return installations.find(
+              function targetInstallation(installation) {
+                return installation.id == installationId;
+              },
+            );
+          },
+        );
+    }
+
+    async function validateInstallation(installation) {
+      logger.log(`Validating app installation '${installationId}'`);
+      if (installation) {
+        logger.log('Installation valid');
+        return installation;
+      } else {
+        logger.warn('Installation invalid');
+        throw new HttpsError('permission-denied');
+      }
+    }
+
+    async function getInstallationOctokit({ id }) {
+      return app.getInstallationOctokit(id);
+    }
+
+    async function listReposAccessibleToInstallation(octokit) {
+      const PAGE_SIZE = 13; // Arbitrary.
+
+      logger.info('Fetching relevant repos');
+      return octokit.rest.apps.listReposAccessibleToInstallation({
+        per_page: PAGE_SIZE,
+      }).then(
+        function injectMetadata({ data }) {
+          return {
+            ...data,
+            page_size: PAGE_SIZE,
+            installation_id: installationId,
+          };
+        },
+      );
+    }
   },
 );
 
@@ -180,6 +235,7 @@ app.webhooks.on(
     );
 
     var { pull_request: pullRequest, repository } = payload;
+    // TODO(dabrady) Read these from the component config instead
     var deployableBranches = [
       'staging',
       // NOTE(brady) Our default branches are our production codebase.
