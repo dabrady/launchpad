@@ -1,5 +1,5 @@
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { onRequest } from 'firebase-functions/v2/https';
+import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import { App } from 'octokit';
@@ -43,13 +43,8 @@ const app = new App({
 
 /** *** MAIN FUNCTIONS *** **/
 
-export const install = onRequest(
-  {
-    // Allow requests from anywhere
-    // TODO(dabrady) Restrict this to our own domain
-    cors: true,
-  },
-  async function install(request, response) {
+export const install = onCall(
+  async function install(request) {
     var {
       code,
       installation_id: installationId,
@@ -61,7 +56,7 @@ export const install = onRequest(
        * we create.
        */
       // setup_action,
-    } = request.body;
+    } = request.data;
 
     await findInstallation(app, code, installationId)
       .then(
@@ -69,17 +64,16 @@ export const install = onRequest(
           logger.log(`Validating app installation '${installationId}'`);
           if (installation) {
             logger.log('we good');
-            response.sendStatus(200);
           } else {
             logger.log('nope');
-            response.sendStatus(403);
+            throw new HttpsError('permission-denied');
           }
         },
       )
       .catch(
         function internalError(error) {
           logger.error('Something went wrong validating the installation', error);
-          return response.sendStatus(500);
+          throw error;
         },
       );
   },
@@ -115,6 +109,7 @@ export const handleGitHubWebhooks = onRequest(
 
 /**
  * Given a `pull_request` document, determines whether it is deployable.
+ * TODO(dabrady) Convert this to a 'callable function' to prevent external use.
  */
 export const isPullRequestDeployable = onRequest(
   {
