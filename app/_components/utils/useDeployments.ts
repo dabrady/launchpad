@@ -28,7 +28,7 @@ function subscribe(
 ) {
   return onSnapshot(
     query(
-      collection(firestore, 'components', componentId, 'deployments'),
+      collection(firestore, 'deployable-components', componentId, 'deployments'),
       where('target', '==', targetEnv),
       where('state', 'in', targetStates),
     ),
@@ -105,7 +105,7 @@ export function updateDeployment(
   updates: Partial<Deployment>,
 ) {
   return updateDoc(
-    doc(firestore, `components/${componentId}/deployments/${id}`),
+    doc(firestore, `deployable-components/${componentId}/deployments/${id}`),
     {
       ...updates,
       timestamp: serverTimestamp(),
@@ -118,15 +118,15 @@ export function createDeployment(
   { uid: id, displayName: name, email }: FirebaseUser,
   targetEnv: Environment,
 ) {
-  var { componentId, number } = pullRequest;
+  var { componentId, number, repo: { name: repoName } } = pullRequest;
   return addDoc(
-    collection(firestore, 'components', componentId, 'deployments'),
+    collection(firestore, 'deployable-components', componentId, 'deployments'),
     {
       pullRequest: { ...pullRequest, enqueued: true },
       owner: { id, name, email },
       state: DeploymentState.ENQUEUED,
       target: targetEnv,
-      displayName: `${componentId} #${number}`,
+      displayName: `${repoName} #${number}`,
       timestamp: serverTimestamp(),
     } as Omit<Deployment, 'id'>,
   );

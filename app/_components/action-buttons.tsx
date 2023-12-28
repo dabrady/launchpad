@@ -27,6 +27,7 @@ export function DeployButton({ pullRequest }) {
     number,
     title,
     url,
+    repo: { name: repoName },
   } = pullRequest;
   var owner = auth.currentUser;
   var { targetEnv } = useTargetEnvironment();
@@ -84,7 +85,7 @@ export function DeployButton({ pullRequest }) {
           Deploy&nbsp;
           <strong>
             <Link href={url} underline='hover' color='inherit'>
-              <code>{componentId}#{number}</code>
+              <code>{repoName}#{number}</code>
             </Link>
           </strong> to&nbsp;
 

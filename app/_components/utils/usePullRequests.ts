@@ -25,7 +25,7 @@ function subscribe(
 ) {
   return onSnapshot(
     query(
-      collection(firestore, 'components', componentId, 'pull_requests'),
+      collection(firestore, 'deployable-components', componentId, 'pull-requests'),
       where('target', '==', targetEnv),
       where('enqueued', '==', false),
     ),
@@ -66,7 +66,7 @@ export function updatePullRequest(
   updates: Partial<RawPullRequest>,
 ) {
   return updateDoc(
-    doc(firestore, `components/${componentId}/pull_requests/${id}`),
+    doc(firestore, `deployable-components/${componentId}/pull-requests/${id}`),
     {
       ...updates,
       timestamp: serverTimestamp(),
