@@ -99,3 +99,21 @@ export async function isDeployable(
     },
   );
 }
+
+/**
+ * This uses the given temporary user access code to access the GitHub App installations
+ * owned by a user and locate a specific one. If no match is found, the installation is
+ * either inaccessible to the user (indicating some form of phishing attack) or does
+ * not exist (again, indicating some form of phishing attack).
+ */
+export async function findInstallation(app, code, installationId) {
+  var userOctokit = await app.oauth.getUserOctokit({ code });
+  var {
+    data: { installations },
+  } = await userOctokit.rest.apps.listInstallationsForAuthenticatedUser();
+  return installations.find(
+    function targetInstallation(installation) {
+      return installation.id == installationId;
+    },
+  );
+}

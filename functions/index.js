@@ -9,6 +9,7 @@ import {
   registerOrUpdate,
 } from './firestore-functions.js';
 import {
+  findInstallation,
   isDeployable as _isDeployable,
 } from './helpers.js';
 
@@ -21,6 +22,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const appId = process.env.APP_ID;
+const clientId = process.env.CLIENT_ID;
+const clientSecret = process.env.CLIENT_SECRET;
 const webhookSecret = process.env.WEBHOOK_SECRET;
 const privateKey = process.env.PRIVATE_KEY;
 const GLOBAL_FUNCTION_CONFIG = {
@@ -32,12 +35,56 @@ setGlobalOptions(GLOBAL_FUNCTION_CONFIG);
 const app = new App({
   appId,
   privateKey,
+  oauth: { clientId, clientSecret },
   webhooks: {
     secret: webhookSecret,
   },
 });
 
 /** *** MAIN FUNCTIONS *** **/
+
+export const install = onRequest(
+  {
+    // Allow requests from anywhere
+    // TODO(dabrady) Restrict this to our own domain
+    cors: true,
+  },
+  async function install(request, response) {
+    var {
+      code,
+      installation_id: installationId,
+      /**
+       * NOTE(dabardy) This is either 'install' or 'update'. We want to handle both,
+       * to allow users to add/remove repos incrementally. To do that, we'll need to 'diff'
+       * the set of repos the installation covers and add/remove accordingly. And to
+       * do _that_, we need to ensure we associate the installation ID with the configs
+       * we create.
+       */
+      // setup_action,
+    } = request.query;
+
+    await findInstallation(app, code, installationId)
+      .then(
+        function validateInstallation(installation) {
+          logger.log(`Validating app installation '${installationId}'`);
+          if (installation) {
+            logger.log('we good');
+            response.sendStatus(200);
+          } else {
+            logger.log('nope');
+            response.sendStatus(403);
+          }
+        },
+      )
+      .catch(
+        function internalError(error) {
+          logger.error('Something went wrong validating the installation', error);
+          return response.sendStatus(500);
+        },
+      );
+  },
+);
+
 /**
  * NOTE(dabrady) This assumes the caller is GitHub itself, and shouldn't need to
  * change unless the GitHub Webhook API changes: it simply pieces together a
