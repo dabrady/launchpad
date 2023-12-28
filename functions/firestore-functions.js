@@ -70,14 +70,15 @@ export async function registerPullRequest(pullRequest) {
     var pullRequestRef = firestore.doc(pullRequestPath(pullRequest));
 
     // Step 1: Fetch the relevant component.
-    logger.debug('looking up component doc');
+    logger.debug(`looking up '${componentRef.path}' doc`);
     return transaction.get(componentRef)
-    // Step 1.5: Create it if it doesn't already exist.
-      .then(function ensureComponentExists(componentDoc) {
-        logger.debug('checking if component exists');
+    // Step 1.5: Reject if it doesn't exist.
+      .then(function rejectIfNoComponent(componentDoc) {
+        logger.debug(`checking if '${componentRef.path}' exists`);
         if (!componentDoc.exists) {
-          logger.debug(`creating new component -> ${componentRef.path}`);
-          return transaction.create(componentRef, {});
+          var message = `Repo '${repo.full_name}' is not configured for use with Launchpad`;
+          logger.info(`${message}, skipping`);
+          return Promise.reject(message);
         }
         return Promise.resolve(componentDoc);
       })
