@@ -131,11 +131,11 @@ export const isPullRequestDeployable = onRequest(
         name,
       },
     } = request.body;
-    app.octokit.request('GET /repos/{owner}/{name}/installation', { owner, name })
+    app.octokit.rest.apps.getRepoInstallation({ owner, name })
       .then(function getAuthenticatedOctokit({ data: { id } }) {
         return app.getInstallationOctokit(id);
       })
-      .then(function checkIsDeployabe(octokit) {
+      .then(function checkIsDeployable(octokit) {
         return _isDeployable(octokit, {
           number,
           repo: {
