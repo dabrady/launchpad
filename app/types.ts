@@ -10,6 +10,7 @@ export enum Environment {
 export enum PullRequestState {
   READY = 'ready',
   NOT_READY = 'not ready',
+  FETCH_ERROR = '<fetch error>',
 };
 
 export enum DeploymentState {

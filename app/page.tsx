@@ -39,7 +39,8 @@ const Actions = {
   [PullRequestState.READY]: (pullRequest: PullRequest) => ([
     <DeployButton key={0} pullRequest={pullRequest} />,
   ]),
-  [PullRequestState.NOT_READY]: [],
+  [PullRequestState.NOT_READY]: () => [],
+  [PullRequestState.FETCH_ERROR]: () => [],
 
   // Deployments
   [DeploymentState.DEPLOYING]: [

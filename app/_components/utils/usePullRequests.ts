@@ -63,7 +63,7 @@ export async function judgePullRequests(
       .then((response) => response.json())
       .then((deployable) => (
         deployable ? PullRequestState.READY : PullRequestState.NOT_READY
-      ));
+      )).catch(() => PullRequestState.FETCH_ERROR);
   }));
 }
 

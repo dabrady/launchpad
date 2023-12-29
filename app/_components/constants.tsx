@@ -11,6 +11,7 @@ export const Chips: {
   // Pull requests
   [PullRequestState.READY]: <MonoChip label={PullRequestState.READY} color="info"/>,
   [PullRequestState.NOT_READY]: <MonoChip label={PullRequestState.NOT_READY} color="default"/>,
+  [PullRequestState.FETCH_ERROR]: <MonoChip label={PullRequestState.FETCH_ERROR} color="error"/>,
 
   // Deployments
   [DeploymentState.ENQUEUED]: <MonoChip label={DeploymentState.ENQUEUED} color="default"/>,
