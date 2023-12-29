@@ -37,7 +37,9 @@ next-env.d.ts
 
 # firebase
 .firebase
-ui-debug.log
+ui-debug.log*
+firebase-debug.log*
+firestore-debug.log*
 
 # terraform
 terraform.tfstate*

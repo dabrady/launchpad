@@ -10,6 +10,7 @@ export enum Environment {
 export enum PullRequestState {
   READY = 'ready',
   NOT_READY = 'not ready',
+  FETCH_ERROR = '<fetch error>',
 };
 
 export enum DeploymentState {
@@ -62,4 +63,29 @@ export type Deployment = {
   target: Environment;
   displayName: string;
   timestamp: string;
+}
+
+export type DeployableComponent = {
+  id: string;
+  created_at: string;
+  installation_id: string;
+  full_name: string;
+  name: string;
+  owner: string;
+
+  // TODO(dabrady) Fully support these in webhook handler and web app env switcher.
+  production_branch: string;
+  staging_branch: string;
+
+  // TODO(dabrady) Flesh these out as our needs reveal themselves
+  deploy_api: {
+    production: {
+      submit_deploy: string;
+    };
+    staging: {
+      submit_deploy: string;
+    };
+  };
+
+  // ... What else?
 }

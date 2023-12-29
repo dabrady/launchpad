@@ -1,10 +1,11 @@
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { onRequest } from 'firebase-functions/v2/https';
+import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import { App } from 'octokit';
 
 import {
+  createNewDeployables,
   disqualify,
   registerOrUpdate,
 } from './firestore-functions.js';
@@ -21,10 +22,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const appId = process.env.APP_ID;
+const clientId = process.env.CLIENT_ID;
+const clientSecret = process.env.CLIENT_SECRET;
 const webhookSecret = process.env.WEBHOOK_SECRET;
 const privateKey = process.env.PRIVATE_KEY;
 const GLOBAL_FUNCTION_CONFIG = {
   // NOTE(dabrady) Closest to `eur3`, where our data lives
+  // @see https://firebase.google.com/docs/functions/locations#selecting-regions_firestore-storage
   region: 'europe-west1',
 };
 setGlobalOptions(GLOBAL_FUNCTION_CONFIG);
@@ -32,12 +36,105 @@ setGlobalOptions(GLOBAL_FUNCTION_CONFIG);
 const app = new App({
   appId,
   privateKey,
+  oauth: { clientId, clientSecret },
   webhooks: {
     secret: webhookSecret,
   },
 });
 
 /** *** MAIN FUNCTIONS *** **/
+
+export const install = onCall(
+  async function install(request) {
+    var {
+      code,
+      installation_id: installationId,
+      /**
+       * NOTE(dabrady) This is either 'install' or 'update'. We want to handle both,
+       * to allow users to add/remove repos incrementally. To do that, we'll need to 'diff'
+       * the set of repos the installation covers and add/remove accordingly. And to
+       * do _that_, we need to ensure we associate the installation ID with the configs
+       * we create.
+       */
+      // setup_action,
+    } = request.data;
+
+    return await findInstallation()
+      .then(validateInstallation)
+      .then(getInstallationOctokit)
+      .then(listReposAccessibleToInstallation)
+      .then(createNewDeployables)
+      .catch(
+        function internalError(error) {
+          logger.error('Something went wrong validating the installation', error);
+          throw error;
+        },
+      );
+
+    /******/
+
+    /**
+     * This uses the given temporary user access code to access the GitHub App installations
+     * owned by a user and locate a specific one. If no match is found, the installation is
+     * either inaccessible to the user (indicating some form of phishing attack) or does
+     * not exist (again, indicating some form of phishing attack).
+     */
+    async function findInstallation() {
+      return app.oauth.getUserOctokit({ code })
+        .then(
+          // NOTE(dabrady) This is paginated, default page size is something like 30.
+          // If the user owns more than 30 app installations, this may return false
+          // negatives. But I'm not going to deal with pagination right now, most users'
+          // installations probably fall on the first page.
+          function listInstallations(octokit) {
+            return octokit.rest.apps.listInstallationsForAuthenticatedUser();
+          },
+        )
+        .then(
+          function findTheOne({ data: { installations } }) {
+            return installations.find(
+              function targetInstallation(installation) {
+                return installation.id == installationId;
+              },
+            );
+          },
+        );
+    }
+
+    async function validateInstallation(installation) {
+      logger.log(`Validating app installation '${installationId}'`);
+      if (installation) {
+        logger.log('Installation valid');
+        return installation;
+      } else {
+        logger.warn('Installation invalid');
+        throw new HttpsError('permission-denied');
+      }
+    }
+
+    async function getInstallationOctokit({ id }) {
+      return app.getInstallationOctokit(id);
+    }
+
+    async function listReposAccessibleToInstallation(octokit) {
+      const PAGE_SIZE = 13; // Arbitrary.
+
+      logger.info('Fetching relevant repos');
+      return octokit.rest.apps.listReposAccessibleToInstallation({
+        per_page: PAGE_SIZE,
+      }).then(
+        function injectMetadata({ data }) {
+          return {
+            ...data,
+            page_size: PAGE_SIZE,
+            installation_id: installationId,
+          };
+        },
+      );
+    }
+  },
+);
+
 /**
  * NOTE(dabrady) This assumes the caller is GitHub itself, and shouldn't need to
  * change unless the GitHub Webhook API changes: it simply pieces together a
@@ -68,6 +165,7 @@ export const handleGitHubWebhooks = onRequest(
 
 /**
  * Given a `pull_request` document, determines whether it is deployable.
+ * TODO(dabrady) Convert this to a 'callable function' to prevent external use.
  */
 export const isPullRequestDeployable = onRequest(
   {
@@ -89,11 +187,11 @@ export const isPullRequestDeployable = onRequest(
         name,
       },
     } = request.body;
-    app.octokit.request('GET /repos/{owner}/{name}/installation', { owner, name })
+    app.octokit.rest.apps.getRepoInstallation({ owner, name })
       .then(function getAuthenticatedOctokit({ data: { id } }) {
         return app.getInstallationOctokit(id);
       })
-      .then(function checkIsDeployabe(octokit) {
+      .then(function checkIsDeployable(octokit) {
         return _isDeployable(octokit, {
           number,
           repo: {
@@ -138,6 +236,7 @@ app.webhooks.on(
     );
 
     var { pull_request: pullRequest, repository } = payload;
+    // TODO(dabrady) Read these from the component config instead
     var deployableBranches = [
       'staging',
       // NOTE(brady) Our default branches are our production codebase.

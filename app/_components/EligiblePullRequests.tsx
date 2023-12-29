@@ -13,13 +13,13 @@ import {
   TableRow,
 } from '@mui/material';
 
-import { PullRequest, PullRequestState } from '@/types';
+import { DeployableComponent, PullRequest, PullRequestState } from '@/types';
 import { Chips } from '@/_components/constants';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 import usePullRequests from '@/_components/utils/usePullRequests';
 
 interface Props {
-  components: string[];
+  components: DeployableComponent[];
   actions: { [key in PullRequestState]: React.ReactNode[] };
 }
 export default function EligiblePullRequests({ components, actions }: Props) {
@@ -57,7 +57,6 @@ export default function EligiblePullRequests({ components, actions }: Props) {
             .map(
               function renderItem(pullRequest: PullRequest, index) {
                 var {
-                  componentId,
                   number,
                   title,
                   url,
@@ -66,6 +65,7 @@ export default function EligiblePullRequests({ components, actions }: Props) {
                     handle: authorHandle,
                     url: authorUrl,
                   },
+                  repo: { name: repoName },
                 } = pullRequest;
                 return (
                   <TableRow key={index} hover>
@@ -74,7 +74,7 @@ export default function EligiblePullRequests({ components, actions }: Props) {
                     </TableCell>
                     <TableCell width={150}>
                       <Link href={url} underline='hover'>
-                        <code>{componentId} #{number}</code>
+                        <code>{repoName} #{number}</code>
                       </Link>
                       <br/>
                       {title}

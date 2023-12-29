@@ -1,5 +1,4 @@
 'use client';
-import { signInWithPopup } from "firebase/auth";
 import Image from 'next/image';
 import {
   Button,
@@ -9,13 +8,12 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
-
-import { auth, GoogleAuthProvider } from "#/firebase";
+import { useContext, useState } from 'react';
 
 import {
-  Environment,
+  DeployableComponent,
   DeploymentState,
+  Environment,
   PullRequest,
   PullRequestState,
 } from '@/types';
@@ -27,16 +25,13 @@ import {
   RevertButton,
 } from '@/_components/action-buttons';
 import ActiveDeployments from '@/_components/ActiveDeployments';
+import AppBar from '@/_components/AppBar';
+import { AUTH_CONTEXT } from '@/_components/AuthProvider';
 import EligiblePullRequests from '@/_components/EligiblePullRequests';
 import DeploymentHistory from '@/_components/DeploymentHistory';
-import useAuth from '@/_components/utils/useAuth';
+import useDeployableComponents from '@/_components/utils/useDeployableComponents';
 
 import styles from './page.module.css';
-
-const DEPLOYABLE_COMPONENTS = [
-  'launchpad',
-  'insitu-app',
-];
 
 // TODO this needs to be represented better.
 const Actions = {
@@ -44,7 +39,8 @@ const Actions = {
   [PullRequestState.READY]: (pullRequest: PullRequest) => ([
     <DeployButton key={0} pullRequest={pullRequest} />,
   ]),
-  [PullRequestState.NOT_READY]: [],
+  [PullRequestState.NOT_READY]: () => [],
+  [PullRequestState.FETCH_ERROR]: () => [],
 
   // Deployments
   [DeploymentState.DEPLOYING]: [
@@ -64,35 +60,35 @@ const Actions = {
 };
 
 export default function Home() {
-  var currentUser = useAuth({
-    onLogout: function login() {
-      signInWithPopup(auth, GoogleAuthProvider).then(() => console.log('signed in'));
-    },
-  });
-
+  var deployableComponents: DeployableComponent[] = useDeployableComponents();
+  var currentUser = useContext(AUTH_CONTEXT);
   if (!currentUser) {
     return (
-      <main className={styles.main}>
-        <CircularProgress />
-      </main>
+      <AppBar>
+        <main className={styles.main}>
+          <CircularProgress />
+        </main>
+      </AppBar>
     );
   }
 
   return (
-    <main className={styles.main}>
-      <Stack spacing={10}>
-        {/* NOTE(dabrady) Add component filter as we grow. */}
-        <EligiblePullRequests
-          components={DEPLOYABLE_COMPONENTS}
-          actions={Actions}
-        />
+    <AppBar withEnvSwitcher>
+      <main className={styles.main}>
+        <Stack spacing={10}>
+          {/* NOTE(dabrady) Add component filter as we grow. */}
+          <EligiblePullRequests
+            components={deployableComponents}
+            actions={Actions}
+          />
 
-        <ActiveDeployments
-          components={DEPLOYABLE_COMPONENTS}
-        />
+          <ActiveDeployments
+            components={deployableComponents}
+          />
 
-        <DeploymentHistory />
-      </Stack>
-    </main>
+          <DeploymentHistory />
+        </Stack>
+      </main>
+    </AppBar>
   );
 }
