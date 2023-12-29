@@ -23,7 +23,7 @@ export const firebase = (function createFirebaseApp(config: FirebaseOptions) {
   }
 })(firebaseConfig);
 
-export const firestore = getFirestore(firebase, 'europe-west1');
+export const firestore = getFirestore(firebase);
 export const functions = getFunctions(firebase, 'europe-west1');
 export const auth = getAuth(firebase);
 export const GoogleAuthProvider = new _GoogleAuthProvider();
