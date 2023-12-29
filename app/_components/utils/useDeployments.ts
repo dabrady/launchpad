@@ -18,17 +18,22 @@ import { useEffect, useRef, useState } from "react";
 
 import { firestore } from '#/firebase';
 
-import { Environment, Deployment, DeploymentState } from '@/types';
+import {
+  DeployableComponent,
+  Environment,
+  Deployment,
+  DeploymentState,
+} from '@/types';
 
 function subscribe(
-  componentId: string,
+  component: DeployableComponent,
   targetEnv: Environment,
   targetStates: DeploymentState[],
   processNextSnapshot: (_: Deployment[]) => void,
 ) {
   return onSnapshot(
     query(
-      collection(firestore, 'deployable-components', componentId, 'deployments'),
+      collection(firestore, 'deployable-components', component.id, 'deployments'),
       where('target', '==', targetEnv),
       where('state', 'in', targetStates),
     ),
@@ -46,7 +51,7 @@ function subscribe(
 }
 
 function useDeployments(
-  components: string[],
+  components: DeployableComponent[],
   targetEnv: Environment,
   targetStates: DeploymentState[],
 ) {
@@ -71,7 +76,7 @@ function useDeployments(
         targetStates,
         // Step 2: Store and trigger a re-render.
         function storeEm(deployments: Deployment[]) {
-          setDeployments((prev) => ({ ...prev, [component]: deployments }));
+          setDeployments((prev) => ({ ...prev, [component.name]: deployments }));
           setLoadedComponents((prev) => {
             if (prev < components.length) {
               return prev + 1;
@@ -132,7 +137,7 @@ export function createDeployment(
   );
 }
 
-export function useDeploymentHistory(components: string[], targetEnv: Environment) {
+export function useDeploymentHistory(components: DeployableComponent[], targetEnv: Environment) {
   return useDeployments(
     components,
     targetEnv,
@@ -145,7 +150,7 @@ export function useDeploymentHistory(components: string[], targetEnv: Environmen
   );
 }
 
-export function useActiveDeployments(components: string[], targetEnv: Environment) {
+export function useActiveDeployments(components: DeployableComponent[], targetEnv: Environment) {
   return useDeployments(
     components,
     targetEnv,

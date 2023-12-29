@@ -16,16 +16,22 @@ import { useEffect, useRef, useState } from "react";
 
 import { firestore } from '#/firebase';
 
-import { Environment, RawPullRequest, PullRequest, PullRequestState } from '@/types';
+import {
+  DeployableComponent,
+  Environment,
+  RawPullRequest,
+  PullRequest,
+  PullRequestState,
+} from '@/types';
 
 function subscribe(
-  componentId: string,
+  component: DeployableComponent,
   targetEnv: Environment,
   processNextSnapshot: (_: RawPullRequest[]) => void,
 ) {
   return onSnapshot(
     query(
-      collection(firestore, 'deployable-components', componentId, 'pull-requests'),
+      collection(firestore, 'deployable-components', component.id, 'pull-requests'),
       where('target', '==', targetEnv),
       where('enqueued', '==', false),
     ),
@@ -74,7 +80,10 @@ export function updatePullRequest(
   );
 }
 
-export default function usePullRequests(components: string[], targetEnv: Environment) {
+export default function usePullRequests(
+  components: DeployableComponent[],
+  targetEnv: Environment,
+) {
   const [pullRequests, setPullRequests] = useState<{ [key: string]: PullRequest[] }>({});
   const [loadedComponents, setLoadedComponents] = useState(0);
 
@@ -114,7 +123,7 @@ export default function usePullRequests(components: string[], targetEnv: Environ
                 }
 
                 // Step 4: Store and trigger a re-render.
-                setPullRequests((prev) => ({ ...prev, [component]: prs }));
+                setPullRequests((prev) => ({ ...prev, [component.name]: prs }));
                 setLoadedComponents((prev) => {
                   if (prev < components.length) {
                     return prev + 1;

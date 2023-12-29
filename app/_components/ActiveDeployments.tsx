@@ -19,14 +19,19 @@ import { useState } from 'react';
 
 import { auth } from "#/firebase";
 
-import { Deployment as TDeployment, DeploymentState, Environment } from '@/types';
+import {
+  DeployableComponent,
+  Deployment as TDeployment,
+  DeploymentState,
+  Environment,
+} from '@/types';
 import { Chips } from '@/_components/constants';
 import DeploymentModal from '@/_components/DeploymentModal';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 import { useActiveDeployments } from '@/_components/utils/useDeployments';
 
 interface Props {
-  components: string[];
+  components: DeployableComponent[];
 }
 
 const COLUMNS = [

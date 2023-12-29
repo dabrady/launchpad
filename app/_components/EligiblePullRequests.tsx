@@ -13,13 +13,13 @@ import {
   TableRow,
 } from '@mui/material';
 
-import { PullRequest, PullRequestState } from '@/types';
+import { DeployableComponent, PullRequest, PullRequestState } from '@/types';
 import { Chips } from '@/_components/constants';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 import usePullRequests from '@/_components/utils/usePullRequests';
 
 interface Props {
-  components: string[];
+  components: DeployableComponent[];
   actions: { [key in PullRequestState]: React.ReactNode[] };
 }
 export default function EligiblePullRequests({ components, actions }: Props) {
