@@ -1,7 +1,7 @@
 import { Roboto } from 'next/font/google';
-import { ThemeOptions } from '@mui/material/styles';
+import { PaletteOptions } from '@mui/material/styles';
 
-const LIGHT_PALETTE: ThemeOptions = {
+const LIGHT_PALETTE: PaletteOptions = {
   mode: 'light',
   primary: {
     main: '#006e08',
@@ -33,7 +33,7 @@ const LIGHT_PALETTE: ThemeOptions = {
   divider: '#dfe4d8',
 };
 
-const DARK_PALETTE: ThemeOptions = {
+const DARK_PALETTE: PaletteOptions = {
   mode: 'dark',
   primary: {
     main: '#7cdc6c',
@@ -71,7 +71,7 @@ export const roboto = Roboto({
   display: 'swap',
 });
 
-export function getColorPalette(mode: 'light'|'dark') {
+export function getColorPalette(mode: 'light'|'dark'): PaletteOptions {
   if (mode == 'light') return LIGHT_PALETTE;
   return DARK_PALETTE;
 }

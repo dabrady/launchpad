@@ -20,7 +20,7 @@ import usePullRequests from '@/_components/utils/usePullRequests';
 
 interface Props {
   components: DeployableComponent[];
-  actions: { [key in PullRequestState]: React.ReactNode[] };
+  actions: { [key in PullRequestState]: (_: any) => React.ReactNode[] };
 }
 export default function EligiblePullRequests({ components, actions }: Props) {
   var { targetEnv } = useTargetEnvironment();

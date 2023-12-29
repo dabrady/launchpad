@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 /**
  * A mapping of the standard GitHub branches used for our product environments,
  * keyed by more semantic names.
@@ -40,7 +42,8 @@ export type RawPullRequest = {
     name: string;
     owner: string;
   };
-  timestamp: string;
+  created_at: Timestamp;
+  updated_at: Timestamp;
 
   /** Whether or not this PR is currently involved in a deployment. */
   enqueued: boolean;
@@ -51,8 +54,7 @@ export type PullRequest = RawPullRequest & {
   state: PullRequestState;
 }
 
-export type Deployment = {
-  id: string;
+export type RawDeployment = {
   pullRequest: PullRequest,
   owner: {
     id: string;
@@ -62,12 +64,17 @@ export type Deployment = {
   state: DeploymentState;
   target: Environment;
   displayName: string;
-  timestamp: string;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+}
+export type Deployment = RawDeployment & {
+  id: string;
 }
 
 export type DeployableComponent = {
   id: string;
-  created_at: string;
+  created_at: Timestamp;
+  updated_at: Timestamp;
   installation_id: string;
   full_name: string;
   name: string;

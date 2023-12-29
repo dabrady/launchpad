@@ -11,17 +11,28 @@ import {
   Typography,
 } from '@mui/material';
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
-import { auth } from "#/firebase";
+import {
+  DeployableComponent,
+  DeploymentState,
+  Environment,
+  PullRequest,
+  PullRequestState,
+} from '@/types';
 
-import { DeploymentState, Environment, PullRequestState } from '@/types';
+import { AUTH_CONTEXT } from '@/_components/AuthGuard';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
+
 import { labelOf } from '@/_components/utils/typescript';
+import useDeployableComponents from '@/_components/utils/useDeployableComponents';
 import { createDeployment, useActiveDeployments } from '@/_components/utils/useDeployments';
 import { judgePullRequests, updatePullRequest } from '@/_components/utils/usePullRequests';
 
-export function DeployButton({ pullRequest }) {
+interface DeployButtonProps {
+  pullRequest: PullRequest;
+}
+export function DeployButton({ pullRequest }: DeployButtonProps) {
   var {
     componentId,
     number,
@@ -29,13 +40,15 @@ export function DeployButton({ pullRequest }) {
     url,
     repo: { name: repoName },
   } = pullRequest;
-  var owner = auth.currentUser;
+  var owner = useContext(AUTH_CONTEXT);
   var { targetEnv } = useTargetEnvironment();
-  var [deployments] = useActiveDeployments([componentId], targetEnv);
 
-  var disabled = !owner // NOTE(dabrady) Should not be possible, just being safe.
+  var deployableComponents: DeployableComponent[] = useDeployableComponents();
+  var targetComponent = deployableComponents.find(({ id }) => id == componentId);
+  var [deployments] = useActiveDeployments([targetComponent], targetEnv);
+
   // NOTE(dabrady) Only one PR for a given component can be actively deploying at once.
-    || Boolean(deployments[componentId]?.length);
+  var disabled = Boolean(deployments[componentId]?.length);
 
   var [openDialog, setOpenDialog] = useState(false);
   var [checkingReadiness, setCheckingReadiness] = useState(false);

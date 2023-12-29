@@ -3,7 +3,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import type { Metadata } from 'next';
 
 import '@/globals.css';
-import AuthProvider from '@/_components/AuthProvider';
+import AuthGuard from '@/_components/AuthGuard';
 import SystemThemeProvider from '@/_components/SystemThemeProvider';
 
 export const metadata: Metadata = {
@@ -21,9 +21,9 @@ export default function RootLayout({
       <body>
         <AppRouterCacheProvider>
           <SystemThemeProvider>
-            <AuthProvider>
+            <AuthGuard>
               {children}
-            </AuthProvider>
+            </AuthGuard>
           </SystemThemeProvider>
         </AppRouterCacheProvider>
       </body>

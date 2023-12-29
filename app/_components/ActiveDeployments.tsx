@@ -10,14 +10,13 @@ import {
 } from '@mui/material';
 import {
   DataGrid,
+  GridColDef,
   GridToolbar,
   GridToolbarContainer,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
 
 import { useState } from 'react';
-
-import { auth } from "#/firebase";
 
 import {
   DeployableComponent,
@@ -34,7 +33,7 @@ interface Props {
   components: DeployableComponent[];
 }
 
-const COLUMNS = [
+const COLUMNS: GridColDef<TDeployment>[] = [
   {
     sortable: false,
     field: 'state',
@@ -42,8 +41,8 @@ const COLUMNS = [
     width: 150,
     headerAlign: 'center',
     align: 'center',
-    renderCell: function renderChip(params) {
-      return Chips[params.value];
+    renderCell: function Chip({ value }) {
+      return Chips[value as DeploymentState];
     }
   },
   {
@@ -53,10 +52,10 @@ const COLUMNS = [
     width: 150,
     headerAlign: 'center',
     align: 'center',
-    renderCell: function monospace(params) {
+    renderCell: function PullRequestLink({ row, value }) {
       return (
-        <Link href={params.row.pullRequest.url} underline='hover'>
-          <code>{params.value}</code>
+        <Link href={row.pullRequest.url} underline='hover'>
+          <code>{value}</code>
         </Link>
       );
     }
@@ -80,7 +79,7 @@ const COLUMNS = [
     width: 150,
     headerAlign: 'center',
     align: 'center',
-    renderCell: function renderActions(params) {
+    renderCell: function Actions({ row }) {
       var [openDeployment, setOpenDeployment] = useState(false);
       return (
         <>
@@ -91,7 +90,7 @@ const COLUMNS = [
             Open&hellip;
           </Button>
           <DeploymentModal
-            data={params.row}
+            data={row}
             open={openDeployment}
             onClose={() => setOpenDeployment(false)}
           />

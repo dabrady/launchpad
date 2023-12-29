@@ -9,7 +9,11 @@ import {
   TargetEnvironmentProvider,
 } from '@/_components/TargetEnvironment';
 
-export default function AppBar({ children, withEnvSwitcher = false }) {
+interface Props {
+  children: React.ReactNode;
+  withEnvSwitcher?: boolean;
+}
+export default function AppBar({ children, withEnvSwitcher = false }: Props) {
   var SiteHeading = (
     <Typography
       variant='h6'

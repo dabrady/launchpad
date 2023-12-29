@@ -46,7 +46,7 @@ function subscribe(
 }
 
 export async function judgePullRequests(
-  pullRequests: PullRequest[],
+  pullRequests: RawPullRequest[],
 ): Promise<PromiseSettledResult<PullRequestState>[]> {
   return Promise.allSettled(pullRequests.map((pullRequest) => {
     var { number, repo } = pullRequest;

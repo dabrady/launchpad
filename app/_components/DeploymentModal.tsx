@@ -1,7 +1,7 @@
 'use client';
 
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import {
   Close as CloseIcon,
@@ -15,6 +15,7 @@ import {
   Link,
   Modal,
   Stack,
+  StackProps,
   Step,
   StepConnector,
   StepButton,
@@ -27,14 +28,18 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled, useTheme, SxProps } from '@mui/material/styles';
 
-import { forwardRef } from 'react';
-
-import { Deployment } from '@/types';
+import { Deployment, DeploymentState } from '@/types';
 import { Chips } from '@/_components/constants';
 
-const DEPLOYMENT_STEPS = {
+const DEPLOYMENT_STEPS: {
+  [k: string]: (props: {
+    smallScreen: boolean;
+    activeStep: number;
+    markStepCompleted: (_: number) => void;
+  }) => React.ReactNode;
+} = {
   Deploy: ({ smallScreen, ...rest }) => <DeployStep showLogs={!smallScreen} {...rest}/>,
   Verify: ({ smallScreen }) => <VerifyStep />,
   Merge: ({ smallScreen }) => <MergeStep />,
@@ -65,7 +70,7 @@ export default function DeploymentModal({
     state,
     target,
     displayName,
-    timestamp,
+    updated_at,
   },
   open,
   onClose,
@@ -73,9 +78,8 @@ export default function DeploymentModal({
   var theme = useTheme();
   var smallScreen: boolean = useMediaQuery(theme.breakpoints.down('sm'));
   var stepLabels = Object.keys(DEPLOYMENT_STEPS);
-  var ticketNumber = title.slice(
-    ...(/^\[.*-(?<ticket>\d+)\].*$/d.exec(title)?.indices.groups.ticket ?? [title.length]),
-  );
+
+  var ticketNumber = extractTicketNumber(title);
   var massagedTitle = ticketNumber
     ? title.slice(title.indexOf(']') + 1).trim()
     : title;
@@ -94,7 +98,7 @@ export default function DeploymentModal({
     >
       <ModalContents
         state={state}
-        timestamp={timestamp.toDate()}
+        timestamp={updated_at.toDate()}
         onClose={onClose}
       >
         <ModalHeader smallScreen={smallScreen}>
@@ -142,22 +146,26 @@ export default function DeploymentModal({
 
 // NOTE(dabrady) The immediate child of a `Modal` must accept a ref and other props.
 // @see https://mui.com/material-ui/guides/composition/#caveat-with-refs
-const ModalContents = forwardRef(function ModalContents(
+interface ModalContentsProps extends StackProps {
+  children: React.ReactNode;
+  onClose: () => void;
+  state: DeploymentState;
+  timestamp: Date;
+  sx?: SxProps;
+}
+const ModalContents = forwardRef<HTMLDivElement, ModalContentsProps>(function ModalContents(
   {
     children,
     onClose,
-    smallScreen,
     state,
     timestamp,
     sx = [],
-    ...props
   },
   ref,
 ) {
   return (
     <Stack
       id='modal-contents'
-      {...props}
       ref={ref}
       sx={[
         {
@@ -234,7 +242,7 @@ const ModalContents = forwardRef(function ModalContents(
       <Box id='modal-contents-body' sx={{
         flexGrow: 1,
         display: 'flex',
-        flexDirection: smallScreen ? 'row' : 'column',
+        flexDirection: 'column',
         gap: (theme) => theme.spacing(4),
         paddingTop: 0,
         paddingBottom: (theme) => theme.spacing(2),
@@ -249,7 +257,11 @@ const ModalContents = forwardRef(function ModalContents(
   );
 });
 
-function ModalHeader({ children, smallScreen }) {
+interface ModalHeaderProps {
+  children: React.ReactNode;
+  smallScreen?: boolean;
+}
+function ModalHeader({ children, smallScreen }: ModalHeaderProps) {
   return (
     <Stack
       direction={smallScreen ? 'column' : 'row' }
@@ -269,10 +281,13 @@ function ModalHeader({ children, smallScreen }) {
   );
 }
 
-function Title({ children }) {
+interface TitleProps {
+  children: React.ReactNode;
+}
+function Title({ children }: TitleProps) {
   return (
     <Typography
-      as='h1'
+      variant='h1'
       sx={{
         fontSize: {
           xs: '1.6rem',
@@ -286,10 +301,14 @@ function Title({ children }) {
   );
 }
 
-function Subtitle({ children, sx = [] }) {
+interface SubtitleProps {
+  children: React.ReactNode;
+  sx?: SxProps;
+}
+function Subtitle({ children, sx = [] }: SubtitleProps) {
   return (
     <Typography
-      as='h2'
+      variant='h2'
       sx={{
         fontSize: {
           xs: '1rem',
@@ -304,11 +323,16 @@ function Subtitle({ children, sx = [] }) {
   );
 }
 
+interface DeployStepProps {
+  showLogs: boolean;
+  activeStep: number;
+  markStepCompleted: (_: number) => void;
+}
 function DeployStep({
   showLogs,
   activeStep,
   markStepCompleted,
-}) {
+}: DeployStepProps) {
   return (
     <Stack sx={{
       flex: 1,
@@ -317,7 +341,7 @@ function DeployStep({
     }}>
       {!showLogs
         ? <Typography>deploying</Typography>
-        : <Box as='pre' sx={{
+        : <Box component='pre' sx={{
           height: '100%',
           background: '#f4f4f4',
           border: '1px solid #ddd',
@@ -403,7 +427,7 @@ function VerifyStep() {
         Go to <BetterLink href='#' displayText='theexample.com' /> to verify your changes.
       </Typography>
       <Typography sx={{ paddingTop: (theme) => theme.spacing(2) }}>Relevant links:</Typography>
-      <Box as='ul' sx={{
+      <Box component='ul' sx={{
         '& li': {
           paddingLeft: (theme) => theme.spacing(2),
           marginLeft: (theme) => theme.spacing(2),
@@ -427,16 +451,21 @@ function MergeStep() {
   return <Typography>merging</Typography>;
 }
 
+interface BetterStepperProps {
+  stepLabels: string[];
+  children: (activeStep: number, markStepCompleted: (_: number) => void) => React.ReactNode;
+  vertical?: boolean;
+}
 function BetterStepper({
   stepLabels,
   vertical,
   children,
-}) {
+}: BetterStepperProps) {
   var [activeStep, setActiveStep] = useState(0);
   var [completedSteps, setCompletedSteps] = useState<{
     [k: number]: boolean;
   } >({});
-  function markStepCompleted(step) {
+  function markStepCompleted(step: number) {
     setCompletedSteps((prev) => ({ ...prev, [step]: true }));
     setActiveStep((prev) => prev + 1);
   }
@@ -524,7 +553,10 @@ function BetterStepper({
   );
 }
 
-function ModalActions({ children }) {
+interface ModalActionsProps {
+  children: React.ReactNode;
+}
+function ModalActions({ children }: ModalActionsProps) {
   return (
     <Box
       sx={{
@@ -550,7 +582,12 @@ function DanglingConnector() {
   );
 }
 
-function BetterLink({ href, displayText, sx = [] }) {
+interface BetterLinkProps {
+  href: string;
+  displayText: string;
+  sx?: SxProps;
+}
+function BetterLink({ href, displayText, sx = [] }: BetterLinkProps) {
   return (
     <Link
       href={href}
@@ -570,9 +607,9 @@ function BetterLink({ href, displayText, sx = [] }) {
     >
       {/* Ensure wrapping doesn't separate the icon from the title text. */}
       {displayText.slice(0, -1)}
-      <Box as='span' sx={{ whiteSpace: 'nowrap' }}>
+      <Box component='span' sx={{ whiteSpace: 'nowrap' }}>
         {displayText.slice(-1)}
-        <Box as='sup' sx={{
+        <Box component='sup' sx={{
           verticalAlign: 'top',
         }}>
           <OpenInNewIcon
@@ -587,7 +624,11 @@ function BetterLink({ href, displayText, sx = [] }) {
   );
 }
 
-function DataTable({ data, smallScreen }) {
+interface DataTableProps {
+  data: { [k: string]: any };
+  smallScreen?: boolean;
+}
+function DataTable({ data, smallScreen }: DataTableProps) {
   return (
     <TableContainer sx={{
       width: 'auto',
@@ -617,4 +658,10 @@ function DataTable({ data, smallScreen }) {
       </Table>
     </TableContainer>
   );
+}
+
+function extractTicketNumber(title: string) {
+  var regexResults = (/^\[.*-(?<ticket>\d+)\].*$/d).exec(title);
+  var ticketLoc = regexResults?.indices?.groups?.ticket ?? [title.length];
+  return title.slice(...ticketLoc);
 }
