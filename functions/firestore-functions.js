@@ -212,7 +212,7 @@ export async function createNewDeployables({
           } else {
             var repo = repositories[index];
             logger.error(
-              `Deployable was not created for '${repo.full_name}': ${reason}`
+              `Deployable was not created for '${repo.full_name}': ${reason}`,
             );
           }
         }
@@ -276,9 +276,9 @@ export async function createNewDeployables({
           .then(
             function getData(docSnapshot) {
               return docSnapshot.data();
-            }
+            },
           ).then(serialize);
-      }
+      },
     );
   }
 

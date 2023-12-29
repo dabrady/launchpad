@@ -28,6 +28,7 @@ const webhookSecret = process.env.WEBHOOK_SECRET;
 const privateKey = process.env.PRIVATE_KEY;
 const GLOBAL_FUNCTION_CONFIG = {
   // NOTE(dabrady) Closest to `eur3`, where our data lives
+  // @see https://firebase.google.com/docs/functions/locations#selecting-regions_firestore-storage
   region: 'europe-west1',
 };
 setGlobalOptions(GLOBAL_FUNCTION_CONFIG);
@@ -90,7 +91,7 @@ export const install = onCall(
           },
         )
         .then(
-          function findTheOne({ data: { installations }})  {
+          function findTheOne({ data: { installations } }) {
             return installations.find(
               function targetInstallation(installation) {
                 return installation.id == installationId;
