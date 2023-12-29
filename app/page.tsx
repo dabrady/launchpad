@@ -26,7 +26,7 @@ import {
 } from '@/_components/action-buttons';
 import ActiveDeployments from '@/_components/ActiveDeployments';
 import AppBar from '@/_components/AppBar';
-import { AUTH_CONTEXT } from '@/_components/AuthProvider';
+import { AUTH_CONTEXT } from '@/_components/AuthGuard';
 import EligiblePullRequests from '@/_components/EligiblePullRequests';
 import DeploymentHistory from '@/_components/DeploymentHistory';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
@@ -34,43 +34,24 @@ import useDeployableComponents from '@/_components/utils/useDeployableComponents
 import styles from './page.module.css';
 
 // TODO this needs to be represented better.
-const Actions = {
+const PULL_REQUEST_ACTIONS: {
+  [k in PullRequestState]: (_: any) => React.ReactNode[];
+} = {
   // Pull requests
   [PullRequestState.READY]: (pullRequest: PullRequest) => ([
     <DeployButton key={0} pullRequest={pullRequest} />,
   ]),
   [PullRequestState.NOT_READY]: () => [],
-  [PullRequestState.FETCH_ERROR]: () => [],
-
-  // Deployments
-  [DeploymentState.DEPLOYING]: [
-    <CancelButton key={0} />,
-  ],
-  [DeploymentState.ROLLING_BACK]: [],
-  [DeploymentState.NEEDS_QA]: [
-    <AcceptButton key={0} />,
-    <RejectButton key={1} />,
-  ],
-  [DeploymentState.REVERTED]: [],
-  [DeploymentState.FAILED]: [],
-  [DeploymentState.REJECTED]: [],
-  [DeploymentState.SHIPPED]: [
-    <RevertButton key={0} />,
-  ],
+  /* [PullRequestState.FETCH_ERROR]: () => [], */
+  [PullRequestState.FETCH_ERROR]: (pullRequest: PullRequest) => ([
+    <DeployButton key={0} pullRequest={pullRequest} />,
+  ]),
 };
+
 
 export default function Home() {
   var deployableComponents: DeployableComponent[] = useDeployableComponents();
   var currentUser = useContext(AUTH_CONTEXT);
-  if (!currentUser) {
-    return (
-      <AppBar>
-        <main className={styles.main}>
-          <CircularProgress />
-        </main>
-      </AppBar>
-    );
-  }
 
   return (
     <AppBar withEnvSwitcher>
@@ -79,7 +60,7 @@ export default function Home() {
           {/* NOTE(dabrady) Add component filter as we grow. */}
           <EligiblePullRequests
             components={deployableComponents}
-            actions={Actions}
+            actions={PULL_REQUEST_ACTIONS}
           />
 
           <ActiveDeployments

@@ -123,6 +123,7 @@ export async function registerPullRequest(pullRequest) {
               owner: repo.owner.login,
             },
             created_at: FieldValue.serverTimestamp(),
+            updated_at: FieldValue.serverTimestamp(),
             // Indicate this PR is not currently involved in a deployment
             enqueued: false,
           },
@@ -183,7 +184,7 @@ export async function updatePullRequest(pullRequest) {
       head: sha,
       target: ref,
       title,
-      timestamp: FieldValue.serverTimestamp(),
+      updated_at: FieldValue.serverTimestamp(),
     })
     .then(function returnDocPath() {
       return targetDocPath;
@@ -293,6 +294,7 @@ export async function createNewDeployables({
     return {
       id: id.toString(),
       created_at: FieldValue.serverTimestamp(),
+      updated_at: FieldValue.serverTimestamp(),
       installation_id: installationId.toString(),
       full_name,
       name,

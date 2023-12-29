@@ -10,11 +10,14 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import { getColorPalette, roboto } from '@/theme';
 
-export default function SystemThemeProvider({ children }) {
+interface Props {
+  children: React.ReactNode;
+}
+export default function SystemThemeProvider({ children }: Props) {
   var prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   var theme = useMemo(
     function matchSystemTheme() {
-      var mode = prefersDarkMode ? 'dark' : 'light';
+      var mode: 'dark'|'light' = prefersDarkMode ? 'dark' : 'light';
 
       // TODO(dabrady) Should probably extract the base theme if it gets
       // complicated.

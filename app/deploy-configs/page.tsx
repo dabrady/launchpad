@@ -10,20 +10,10 @@ import {
 import styles from './page.module.css';
 
 import AppBar from '@/_components/AppBar';
-import { AUTH_CONTEXT } from '@/_components/AuthProvider';
+import { AUTH_CONTEXT } from '@/_components/AuthGuard';
 
 export default function NewDeployConfig() {
   var currentUser = useContext(AUTH_CONTEXT);
-
-  if (!currentUser) {
-    return (
-      <AppBar>
-        <main className={styles.main}>
-          <CircularProgress />
-        </main>
-      </AppBar>
-    );
-  }
 
   // TODO(dabrady) retrieve these from GitHub based on installation ID
   var {

@@ -8,11 +8,11 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-
-import { auth } from "#/firebase";
+import { useContext } from 'react';
 
 import { DeploymentState, Environment } from '@/types';
 import { Chips } from '@/_components/constants';
+import { AUTH_CONTEXT } from '@/_components/AuthGuard';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 
 var MOCK_DATA = [
@@ -64,6 +64,7 @@ interface Props {}
 
 // TODO(dabrady) Read actual deployment ledger instead of mock data.
 export default function DeploymentHistory(props: Props) {
+  var currentUser = useContext(AUTH_CONTEXT);
   var { targetEnv } = useTargetEnvironment();
   return (
     <TableContainer>
@@ -90,7 +91,7 @@ export default function DeploymentHistory(props: Props) {
                 </TableCell>
                 <TableCell><a href="#"><code>{displayName}</code></a></TableCell>
                 <TableCell>{dayjs(date).format('HH:mm:ss @ DD MMM YYYY')}</TableCell>
-                <TableCell>{auth.currentUser.displayName}</TableCell>
+                <TableCell>{currentUser.displayName}</TableCell>
               </TableRow>
             );
           })}

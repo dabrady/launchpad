@@ -23,6 +23,8 @@ import {
   Environment,
   Deployment,
   DeploymentState,
+  PullRequest,
+  RawDeployment,
 } from '@/types';
 
 function subscribe(
@@ -40,7 +42,7 @@ function subscribe(
     function _processNextSnapshot(snapshot: QuerySnapshot) {
       var deployments = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        ...doc.data() as RawDeployment,
       }) as Deployment);
       processNextSnapshot(deployments);
     },
@@ -54,9 +56,16 @@ function useDeployments(
   components: DeployableComponent[],
   targetEnv: Environment,
   targetStates: DeploymentState[],
-) {
+): [
+  { [key: string]: Deployment[] },
+  boolean,
+] {
   const [deployments, setDeployments] = useState<{ [key: string]: Deployment[] }>({});
   const [loadedComponents, setLoadedComponents] = useState(0);
+
+  // Remove any nil values. This can happen on initial render, if the source of
+  // the components is `useDeployableComponents` and hasn't finished fetching.
+  components = components.filter(Boolean);
 
   useEffect(() => {
     if (!components?.length) return;
@@ -105,19 +114,6 @@ function useDeployments(
   return [deployments, loadedComponents == components.length];
 };
 
-export function updateDeployment(
-  { id, componentId }: Deployment,
-  updates: Partial<Deployment>,
-) {
-  return updateDoc(
-    doc(firestore, `deployable-components/${componentId}/deployments/${id}`),
-    {
-      ...updates,
-      timestamp: serverTimestamp(),
-    },
-  );
-}
-
 export function createDeployment(
   pullRequest: PullRequest,
   { uid: id, displayName: name, email }: FirebaseUser,
@@ -132,7 +128,8 @@ export function createDeployment(
       state: DeploymentState.ENQUEUED,
       target: targetEnv,
       displayName: `${repoName} #${number}`,
-      timestamp: serverTimestamp(),
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
     } as Omit<Deployment, 'id'>,
   );
 }
