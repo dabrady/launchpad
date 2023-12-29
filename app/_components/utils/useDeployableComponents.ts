@@ -1,6 +1,9 @@
 import {
   collection,
+  documentId,
   onSnapshot,
+  query,
+  where,
   FirestoreError,
   QuerySnapshot,
   Unsubscribe,
@@ -12,10 +15,16 @@ import { firestore } from '#/firebase';
 import { DeployableComponent } from '@/types';
 
 function subscribe(
+  targetComponents: undefined | Pick<DeployableComponent, 'id'>[],
   processNextSnapshot: (_: DeployableComponent[]) => void,
 ) {
+  var collectionQuery = collection(firestore, 'deployable-components');
+  var snapshotQuery = targetComponents
+    ? query(collectionQuery, where(documentId(), 'in', targetComponents))
+    : collectionQuery;
+
   return onSnapshot(
-    collection(firestore, 'deployable-components'),
+    snapshotQuery,
     function _processNextSnapshot(snapshot: QuerySnapshot) {
       var deployableComponents = snapshot.docs.map((doc) => doc.data() as DeployableComponent);
       processNextSnapshot(deployableComponents);
@@ -26,7 +35,7 @@ function subscribe(
   );
 }
 
-export default function useDeployableComponents() {
+export default function useDeployableComponents(targetComponents: undefined | Pick<DeployableComponent, 'id'>[]) {
   var [
     deployableComponents,
     setDeployableComponents,
@@ -34,7 +43,7 @@ export default function useDeployableComponents() {
 
   useEffect(
     function subscribeToComponents() {
-      return subscribe(setDeployableComponents);
+      return subscribe(targetComponents, setDeployableComponents);
     },
     [],
   );

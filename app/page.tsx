@@ -54,7 +54,9 @@ export default function Home() {
   var currentUser = useContext(AUTH_CONTEXT);
 
   return (
-    <AppBar withEnvSwitcher>
+    <AppBar withEnvSwitcher tools={[
+      <Button href='/deploy-configs' color='inherit'>Configuration</Button>
+    ]}>
       <main className={styles.main}>
         <Stack spacing={10}>
           {/* NOTE(dabrady) Add component filter as we grow. */}
