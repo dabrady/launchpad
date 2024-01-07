@@ -1,5 +1,6 @@
 'use client';
 
+import { Timestamp } from 'firebase/firestore';
 import { isEmpty, map, omit, pick, startCase } from 'lodash';
 import {
   Box,
@@ -25,7 +26,9 @@ import styles from './page.module.css';
 
 import AppBar from '@/_components/AppBar';
 import { AUTH_CONTEXT } from '@/_components/AuthGuard';
+import DataTable from '@/_components/DataTable';
 import Link from '@/_components/Link';
+import ScrollIndicator from '@/_components/ScrollIndicator';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
 
 import CopyableTextField from './_components/CopyableTextField';
@@ -63,6 +66,7 @@ export default function NewDeployConfig() {
       </Typography>
 
       <Stack direction='row' spacing={2} sx={{
+        flex: 1,
         minWidth: '65vw',
       }}>
         <Tabs
@@ -82,7 +86,14 @@ export default function NewDeployConfig() {
 
         {deployableComponents.map(
           function renderComponentConfigPanel(component, index) {
-            return <TabPanel key={index} index={index} currentTab={currentTab} component={component} />;
+            return (
+              <TabPanel
+                key={index}
+                index={index}
+                currentTab={currentTab}
+                component={component}
+              />
+            );
           }
         )}
       </Stack>
@@ -96,65 +107,79 @@ const EDITABLE_FIELDS = [
   'deploy_api',
 ];
 function TabPanel({ index, currentTab, component }) {
+  var [panelRef, setPanelRef] = useState(null);
+
   if (index != currentTab) {
     return null;
   }
   var readonlyFields = omit(component, EDITABLE_FIELDS);
   var editableFields = pick(component, EDITABLE_FIELDS);
   return (
-    <Stack sx={{
+    <Box ref={(ref) => setPanelRef(ref)} sx={{
       flex: 1,
       padding: (theme) => theme.spacing(2),
+      overflowY: 'auto',
+      maxHeight: '55vh',
     }}>
-      <Stack spacing={2} sx={{ maxWidth: '60%' }}>
-        {map(
-          readonlyFields,
-          function renderReadonlyField(value, key) {
-            return (
-              <CopyableTextField
-                key={key}
-                variant='filled'
-                label={startCase(key)}
-                value={value}
-                disabled
-              />
-            );
-          },
-        )}
-        {map(
-          editableFields,
-          function renderEditableField(value, key) {
-            // TODO render object fields specially
-            if (key == 'deploy_api') return null;
-            return (
-              <CopyableTextField
-                key={key}
-                variant='filled'
-                label={startCase(key)}
-                defaultValue={value}
-              />
-            );
-          },
-        )}
-      </Stack>
-    </Stack>
+      <DataTable
+        data={readonlyFields}
+        serializer={
+          function serialize(value: any) {
+            if (value instanceof Timestamp) {
+              return value.toDate().toString();
+            }
+
+            return typeof value == 'object'
+                ? JSON.serialize(value)
+                : value.toString();
+          }
+        }
+        sx={{
+          paddingBottom: (theme) => theme.spacing(2),
+        }}
+      />
+      {map(
+        editableFields,
+        function renderEditableField(value, key) {
+          // TODO render object fields specially
+          if (key == 'deploy_api') return null;
+          return (
+            <CopyableTextField
+              key={key}
+              variant='filled'
+              label={startCase(key)}
+              defaultValue={value}
+              copyTooltip={`Copy '${startCase(key)}'`}
+              sx={{
+                width: '100%',
+                paddingBottom: (theme) => theme.spacing(2),
+              }}
+            />
+          );
+        },
+      )}
+      {panelRef && <ScrollIndicator container={panelRef}/>}
+    </Box>
   );
 }
 
 function Page({ children }) {
   return (
-    <AppBar>
-      <main className={styles.main}>
-        <Paper sx={{
-          paddingTop: (theme) => theme.spacing(4),
-          paddingBottom: (theme) => theme.spacing(4),
-          paddingLeft: (theme) => theme.spacing(2),
-          paddingRight: (theme) => theme.spacing(4),
-          borderRadius: '6px',
-        }}>
-          {children}
-        </Paper>
-      </main>
-    </AppBar>
+    <main className={styles.main}>
+      <AppBar>
+        <Box sx={{ flex: 1 }}>
+          <Paper sx={{
+            paddingTop: (theme) => theme.spacing(4),
+            paddingBottom: (theme) => theme.spacing(4),
+            paddingLeft: (theme) => theme.spacing(2),
+            paddingRight: (theme) => theme.spacing(4),
+            borderRadius: '6px',
+            maxHeight: '80vh',
+          }}>
+            {children}
+          </Paper>
+        </Box>
+      </AppBar>
+    </main>
   );
 }
