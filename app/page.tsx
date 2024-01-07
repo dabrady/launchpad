@@ -49,16 +49,15 @@ const PULL_REQUEST_ACTIONS: {
   ]),
 };
 
-
 export default function Home() {
   var deployableComponents: DeployableComponent[] = useDeployableComponents();
   var currentUser = useContext(AUTH_CONTEXT);
 
   return (
-    <AppBar withEnvSwitcher tools={[
-      <LinkButton href='/deploy-configs'>Configuration</LinkButton>
-    ]}>
-      <main className={styles.main}>
+    <main className={styles.main}>
+      <AppBar withEnvSwitcher tools={[
+        <LinkButton href='/deploy-configs'>Configuration</LinkButton>
+      ]}>
         <Stack spacing={10}>
           {/* NOTE(dabrady) Add component filter as we grow. */}
           <EligiblePullRequests
@@ -72,7 +71,7 @@ export default function Home() {
 
           <DeploymentHistory />
         </Stack>
-      </main>
-    </AppBar>
+      </AppBar>
+    </main>
   );
 }
