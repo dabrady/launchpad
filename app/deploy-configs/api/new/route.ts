@@ -6,21 +6,6 @@ import { type NextRequest } from 'next/server';
 import { functions } from '#/firebase';
 
 export function GET(request: NextRequest) {
-  // TODO delete
-  var newComponents = [
-    {id: '685244428'},
-    {id: '720788997'},
-  ];
-  var redirectParams = new URLSearchParams(
-    newComponents.map(
-      function makeParam({ id }) {
-        return ['component', id]
-      }
-    ),
-  );
-  return redirect(`/deploy-configs?${redirectParams}`);
-  // TODO delete
-
   var { searchParams } = request.nextUrl;
   var code = searchParams.get('code');
   var installationId = searchParams.get('installation_id');
