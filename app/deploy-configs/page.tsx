@@ -25,9 +25,8 @@ import styles from './page.module.css';
 
 import AppBar from '@/_components/AppBar';
 import { AUTH_CONTEXT } from '@/_components/AuthGuard';
-
+import Link from '@/_components/Link';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
-
 
 import CopyableTextField from './_components/CopyableTextField';
 
@@ -40,54 +39,54 @@ export default function NewDeployConfig() {
 
   if (!deployableComponents.length) {
     // TODO(dabrady) Render a better placeholder with instructions on how to install the GitHub App.
-    return null;
+    return (
+      <Page>
+        <Typography>
+          To configure a deployment, install&nbsp;
+          <Link href='#' >
+            your Launchpad app
+          </Link>
+          &nbsp;on a GitHub repository.
+        </Typography>
+      </Page>
+    );
   }
 
   return (
-    <AppBar>
-      <main className={styles.main}>
-        <Paper sx={{
-          paddingTop: (theme) => theme.spacing(4),
-          paddingBottom: (theme) => theme.spacing(4),
-          paddingLeft: (theme) => theme.spacing(2),
-          paddingRight: (theme) => theme.spacing(4),
-          borderRadius: '6px',
-        }}>
-          <Typography variant='h3' sx={{
-            paddingBottom: (theme) => theme.spacing(4),
-            paddingLeft: (theme) => theme.spacing(2),
-            paddingRight: (theme) => theme.spacing(4),
-          }}>
-            Deploy Configuration
-          </Typography>
+    <Page>
+      <Typography variant='h3' sx={{
+        paddingBottom: (theme) => theme.spacing(4),
+        paddingLeft: (theme) => theme.spacing(2),
+        paddingRight: (theme) => theme.spacing(4),
+      }}>
+        Deploy Configuration
+      </Typography>
 
-          <Stack direction='row' spacing={2} sx={{
-            minWidth: '65vw',
-          }}>
-            <Tabs
-              orientation='vertical'
-              value={currentTab}
-              onChange={(_, newTab) => setCurrentTab(newTab)}
-              sx={{
-                borderRight: 1, borderColor: 'divider'
-              }}
-            >
-              {deployableComponents.map(
-                function renderComponentTab(component, index) {
-                  return <Tab key={index} label={component.name} />
-                },
-              )}
-            </Tabs>
+      <Stack direction='row' spacing={2} sx={{
+        minWidth: '65vw',
+      }}>
+        <Tabs
+          orientation='vertical'
+          value={currentTab}
+          onChange={(_, newTab) => setCurrentTab(newTab)}
+          sx={{
+            borderRight: 1, borderColor: 'divider'
+          }}
+        >
+          {deployableComponents.map(
+            function renderComponentTab(component, index) {
+              return <Tab key={index} label={component.name} />
+            },
+          )}
+        </Tabs>
 
-            {deployableComponents.map(
-              function renderComponentConfigPanel(component, index) {
-                return <TabPanel key={index} index={index} currentTab={currentTab} component={component} />;
-              }
-            )}
-          </Stack>
-        </Paper>
-      </main>
-    </AppBar>
+        {deployableComponents.map(
+          function renderComponentConfigPanel(component, index) {
+            return <TabPanel key={index} index={index} currentTab={currentTab} component={component} />;
+          }
+        )}
+      </Stack>
+    </Page>
   );
 }
 
@@ -142,3 +141,20 @@ function TabPanel({ index, currentTab, component }) {
   );
 }
 
+function Page({ children }) {
+  return (
+    <AppBar>
+      <main className={styles.main}>
+        <Paper sx={{
+          paddingTop: (theme) => theme.spacing(4),
+          paddingBottom: (theme) => theme.spacing(4),
+          paddingLeft: (theme) => theme.spacing(2),
+          paddingRight: (theme) => theme.spacing(4),
+          borderRadius: '6px',
+        }}>
+          {children}
+        </Paper>
+      </main>
+    </AppBar>
+  );
+}

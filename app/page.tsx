@@ -29,6 +29,7 @@ import AppBar from '@/_components/AppBar';
 import { AUTH_CONTEXT } from '@/_components/AuthGuard';
 import EligiblePullRequests from '@/_components/EligiblePullRequests';
 import DeploymentHistory from '@/_components/DeploymentHistory';
+import LinkButton from '@/_components/LinkButton';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
 
 import styles from './page.module.css';
@@ -55,7 +56,7 @@ export default function Home() {
 
   return (
     <AppBar withEnvSwitcher tools={[
-      <Button href='/deploy-configs' color='inherit'>Configuration</Button>
+      <LinkButton href='/deploy-configs'>Configuration</LinkButton>
     ]}>
       <main className={styles.main}>
         <Stack spacing={10}>

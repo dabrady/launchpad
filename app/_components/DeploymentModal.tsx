@@ -12,7 +12,6 @@ import {
   Box,
   Button,
   IconButton,
-  Link,
   Modal,
   Stack,
   StackProps,
@@ -32,6 +31,7 @@ import { styled, useTheme, SxProps } from '@mui/material/styles';
 
 import { Deployment, DeploymentState } from '@/types';
 import { Chips } from '@/_components/constants';
+import Link from '@/_components/Link';
 
 const DEPLOYMENT_STEPS: {
   [k: string]: (props: {

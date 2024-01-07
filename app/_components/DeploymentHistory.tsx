@@ -13,6 +13,7 @@ import { useContext } from 'react';
 import { DeploymentState, Environment } from '@/types';
 import { Chips } from '@/_components/constants';
 import { AUTH_CONTEXT } from '@/_components/AuthGuard';
+import Link from '@/_components/Link';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 
 var MOCK_DATA = [
@@ -89,7 +90,7 @@ export default function DeploymentHistory(props: Props) {
                 <TableCell>
                   {Chips[state]}
                 </TableCell>
-                <TableCell><a href="#"><code>{displayName}</code></a></TableCell>
+                <TableCell><Link href="#"><code>{displayName}</code></Link></TableCell>
                 <TableCell>{dayjs(date).format('HH:mm:ss @ DD MMM YYYY')}</TableCell>
                 <TableCell>{currentUser.displayName}</TableCell>
               </TableRow>

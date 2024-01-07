@@ -1,7 +1,6 @@
 import {
   AppBar as MuiAppBar,
   Box,
-  Button,
   Stack,
   Toolbar,
   Typography,
@@ -9,10 +8,18 @@ import {
 
 import React from 'react';
 
+import LinkButton from '@/_components/LinkButton';
 import {
   TargetEnvironment,
   TargetEnvironmentProvider,
 } from '@/_components/TargetEnvironment';
+
+const TOOLBAR_SX = {
+  justifyContent: 'space-between',
+  'a': {
+    color: 'inherit',
+  }
+};
 
 interface Props {
   children: React.ReactNode;
@@ -21,7 +28,7 @@ interface Props {
 }
 export default function AppBar({ children, withEnvSwitcher = false, tools = []}: Props) {
   var SiteHeading = (
-    <Button href='/' color='inherit'>
+    <LinkButton href='/'>
       <Typography
         variant='h6'
         sx={{
@@ -30,16 +37,14 @@ export default function AppBar({ children, withEnvSwitcher = false, tools = []}:
       >
         🚀 this is how the world ends
       </Typography>
-    </Button>
+    </LinkButton>
   );
 
   if (withEnvSwitcher) {
     return (
       <TargetEnvironmentProvider>
         <MuiAppBar>
-          <Toolbar sx={{
-            justifyContent: 'space-between'
-          }}>
+          <Toolbar sx={TOOLBAR_SX}>
             <Stack direction='row' alignItems='center'>
               {SiteHeading}
               <TargetEnvironment />
@@ -64,7 +69,12 @@ export default function AppBar({ children, withEnvSwitcher = false, tools = []}:
   }
   return (
     <>
-      <MuiAppBar><Toolbar>{SiteHeading}{...tools}</Toolbar></MuiAppBar>
+      <MuiAppBar>
+        <Toolbar sx={TOOLBAR_SX}>
+          {SiteHeading}
+          {...tools}
+        </Toolbar>
+      </MuiAppBar>
       {children}
     </>
   );
