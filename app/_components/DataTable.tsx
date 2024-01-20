@@ -1,3 +1,5 @@
+'use client';
+
 import _ from 'lodash';
 import { ContentCopy } from '@mui/icons-material';
 import {
@@ -12,9 +14,9 @@ import {
 } from '@mui/material';
 import { SxProps } from '@mui/material/styles';
 
-import { startCase } from 'lodash';
-
 import { forwardRef, useEffect, useState } from 'react';
+
+import useSnackbar from '@/_components/utils/useSnackbar';
 
 interface Props {
   data: { [k: string]: any };
@@ -22,6 +24,12 @@ interface Props {
   sx?: SxProps;
 }
 export default function DataTable({ data, serializer = _.toString, sx }: Props) {
+  // TODO(dabrady) Style this according to theme, it's kinda terrible right now.
+  var { serveSnack, snackbar } = useSnackbar({
+    autoHideDuration: 2500,
+    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+  });
+
   return (
     <TableContainer sx={[
       {
@@ -29,6 +37,7 @@ export default function DataTable({ data, serializer = _.toString, sx }: Props) 
       },
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}>
+      {snackbar}
       <Table>
         <TableBody sx={{
           '& td': {
@@ -36,7 +45,7 @@ export default function DataTable({ data, serializer = _.toString, sx }: Props) 
           },
         }}>
           {Object.keys(data).map(function renderItem(key, index) {
-            var humanKey = startCase(key);
+            var humanKey = _.startCase(key);
             var value = data[key];
             var copyableValue;
             var renderedValue;
@@ -56,6 +65,7 @@ export default function DataTable({ data, serializer = _.toString, sx }: Props) 
                 <CopyableTableCell
                   value={copyableValue}
                   copyTooltip={`Copy '${humanKey}'`}
+                  onCopySuccess={serveSnack(`Copied '${copyableValue}' to clipboard`)}
                 >
                   {renderedValue}
                 </CopyableTableCell>
