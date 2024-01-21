@@ -47,13 +47,11 @@ export default function useSnackbar(props: SnackbarProps) {
 
   /** Snackbar Management */
   function serveSnack(message: string) {
-    return function _serveSnack() {
-      dismissSnack();
-      enqueueSnack({
-        key: new Date().getTime(),
-        message,
-      });
-    };
+    dismissSnack();
+    enqueueSnack({
+      key: new Date().getTime(),
+      message,
+    });
   }
 
   function enqueueSnack(snack: Snack) {

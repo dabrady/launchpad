@@ -27,6 +27,7 @@ import DataTable from '@/_components/DataTable';
 import Link from '@/_components/Link';
 import ScrollIndicator from '@/_components/ScrollIndicator';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
+import useSnackbar from '@/_components/utils/useSnackbar';
 
 export default function NewDeployConfig() {
   var currentUser = useContext(AUTH_CONTEXT);
@@ -103,6 +104,13 @@ const EDITABLE_FIELDS = [
 ];
 function TabPanel({ index, currentTab, component }) {
   var [panelRef, setPanelRef] = useState(null);
+  var { serveSnack, snackbar } = useSnackbar({
+    autoHideDuration: 2500,
+    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+  });
+  function affirmDataCopy(copiedValue: string) {
+    serveSnack(`Copied '${copiedValue}' to clipboard`);
+  }
 
   if (index != currentTab) {
     return null;
@@ -116,8 +124,10 @@ function TabPanel({ index, currentTab, component }) {
       overflowY: 'auto',
       maxHeight: '55vh',
     }}>
+      {snackbar}
       <DataTable
         data={readonlyFields}
+        onDataCopy={affirmDataCopy}
         serializer={
           function serialize(value: any) {
             if (value instanceof Timestamp) {
@@ -159,7 +169,10 @@ function TabPanel({ index, currentTab, component }) {
                       margin: '0 auto', // fix for vertically unaligned icon
                     }}
                   >
-                    <CopyButton value={value} />
+                    <CopyButton
+                      value={value}
+                      onCopySuccess={affirmDataCopy}
+                    />
                   </InputAdornment>
                 ),
               }}

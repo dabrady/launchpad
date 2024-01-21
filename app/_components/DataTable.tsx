@@ -21,16 +21,16 @@ import useSnackbar from '@/_components/utils/useSnackbar';
 
 interface Props {
   data: { [k: string]: any };
-  serializer: (v: any) => any;
+  serializer?: (v: any) => any;
+  onDataCopy: (copiedValue: string) => void;
   sx?: SxProps;
 }
-export default function DataTable({ data, serializer = _.toString, sx }: Props) {
-  // TODO(dabrady) Style this according to theme, it's kinda terrible right now.
-  var { serveSnack, snackbar } = useSnackbar({
-    autoHideDuration: 2500,
-    anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-  });
-
+export default function DataTable({
+  data,
+  serializer = _.toString,
+  onDataCopy,
+  sx,
+}: Props) {
   return (
     <TableContainer sx={[
       {
@@ -38,7 +38,6 @@ export default function DataTable({ data, serializer = _.toString, sx }: Props) 
       },
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}>
-      {snackbar}
       <Table>
         <TableBody sx={{
           '& td': {
@@ -72,7 +71,12 @@ export default function DataTable({ data, serializer = _.toString, sx }: Props) 
                     {renderedValue}
                     <CopyButton
                       value={copyableValue}
-                      onCopySuccess={serveSnack(`Copied '${copyableValue}' to clipboard`)}
+                      onCopySuccess={
+                        function reportCopy(copiedValue: string) {
+                          typeof onDataCopy == 'function'
+                            && onDataCopy(copiedValue);
+                        }
+                      }
                     />
                   </Stack>
                 </TableCell>
