@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -28,6 +29,27 @@ import Link from '@/_components/Link';
 import ScrollIndicator from '@/_components/ScrollIndicator';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
 import useSnackbar from '@/_components/utils/useSnackbar';
+
+const Fieldset = styled('fieldset')(
+  function _styles({ theme }) {
+    return {
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1,
+      gap: theme.spacing(0),
+      padding: theme.spacing(3),
+      marginBottom: theme.spacing(2),
+
+      borderColor: theme.palette.divider,
+      borderStyle: 'solid',
+      borderRadius: '6px',
+
+      'legend': {
+        padding: `0 ${theme.spacing(0.5)}`,
+      },
+    };
+  }
+);
 
 export default function NewDeployConfig() {
   var currentUser = useContext(AUTH_CONTEXT);
@@ -124,65 +146,96 @@ function TabPanel({ index, currentTab, component }) {
       overflowY: 'auto',
       maxHeight: '55vh',
     }}>
-      {snackbar}
+      {/* Readonly fields */}
       <DataTable
         data={readonlyFields}
         onDataCopy={affirmDataCopy}
         serializer={
-          function serialize(value: any) {
-            if (value instanceof Timestamp) {
-              return value.toDate().toString();
-            }
-
-            return typeof value == 'object'
-                ? JSON.stringify(value)
-                : value.toString();
+        function serialize(value: any) {
+          if (value instanceof Timestamp) {
+            return value.toDate().toString();
           }
+
+          return typeof value == 'object'
+               ? JSON.stringify(value)
+               : value.toString();
+        }
         }
         sx={{
           paddingBottom: (theme) => theme.spacing(2),
         }}
       />
-      {map(
-        editableFields,
-        function renderEditableField(value, key) {
-          // TODO render object fields specially
-          if (key == 'deploy_api') return null;
 
-          // TODO(dabrady) Track & persist changes.
-          return (
-            <TextField
-              key={key}
-              type="text"
-              defaultValue={value}
-              variant='filled'
-              label={startCase(key)}
-              sx={{
-                width: '100%',
-                paddingBottom: (theme) => theme.spacing(2),
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment
-                    position="end"
-                    sx={{
-                      margin: '0 auto', // fix for vertically unaligned icon
-                    }}
-                  >
-                    <CopyButton
-                      value={value}
-                      onCopySuccess={affirmDataCopy}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          );
-        },
-      )}
+      {/* Editable fields */}
+      {map(editableFields, renderEditableField)}
+
+      {snackbar}
       {panelRef && <ScrollIndicator container={panelRef}/>}
     </Box>
   );
+
+  /** **** **/
+
+  function renderEditableField(value, key) {
+    var label = startCase(key);
+    switch (typeof value) {
+        // TODO render object fields specially
+      case 'object':
+        return renderFieldGroup(label, value);
+      default:
+        // TODO(dabrady) Track & persist changes.
+        return renderTextField(label, value);
+    }
+  }
+
+  function renderTextField(label, value) {
+    return (
+      <TextField
+        key={label}
+        type="text"
+        defaultValue={value}
+        variant='filled'
+        label={label}
+        sx={{
+          width: '100%',
+          paddingBottom: (theme) => theme.spacing(2),
+        }}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment
+              position="end"
+              sx={{
+                margin: '0 auto', // fix for vertically unaligned icon
+              }}
+            >
+              <CopyButton
+                value={value}
+                onCopySuccess={affirmDataCopy}
+              />
+            </InputAdornment>
+          ),
+        }}
+      />
+    );
+  }
+
+  function renderFieldGroup(label: string, fields: object) {
+    return (
+      <Fieldset
+        key={label}
+        sx={{
+          '&:has(.Mui-focused)': {
+            '& > legend': {
+              color: (theme) => theme.palette.primary.main,
+            }
+          },
+        }}
+      >
+        <legend data-label={label}>{label}</legend>
+        {map(fields, renderEditableField)}
+      </Fieldset>
+    );
+  }
 }
 
 function Page({ children }) {
