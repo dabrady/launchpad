@@ -5,33 +5,28 @@ import { isEmpty, map, omit, pick, startCase } from 'lodash';
 import {
   Box,
   CircularProgress,
-  IconButton,
   InputAdornment,
   Paper,
   Stack,
   Tab,
   Tabs,
   TextField,
-  TextFieldProps,
-  Tooltip,
   Typography,
 } from '@mui/material';
 
-import { ContentCopy } from '@mui/icons-material';
 import { useSearchParams } from 'next/navigation';
 
-import { forwardRef, useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import styles from './page.module.css';
 
 import AppBar from '@/_components/AppBar';
 import { AUTH_CONTEXT } from '@/_components/AuthGuard';
+import CopyButton from '@/_components/CopyButton';
 import DataTable from '@/_components/DataTable';
 import Link from '@/_components/Link';
 import ScrollIndicator from '@/_components/ScrollIndicator';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
-
-import CopyableTextField from './_components/CopyableTextField';
 
 export default function NewDeployConfig() {
   var currentUser = useContext(AUTH_CONTEXT);
@@ -143,16 +138,30 @@ function TabPanel({ index, currentTab, component }) {
         function renderEditableField(value, key) {
           // TODO render object fields specially
           if (key == 'deploy_api') return null;
+
+          // TODO(dabrady) Track & persist changes.
           return (
-            <CopyableTextField
+            <TextField
               key={key}
+              type="text"
+              defaultValue={value}
               variant='filled'
               label={startCase(key)}
-              defaultValue={value}
-              copyTooltip={`Copy '${startCase(key)}'`}
               sx={{
                 width: '100%',
                 paddingBottom: (theme) => theme.spacing(2),
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment
+                    position="end"
+                    sx={{
+                      margin: '0 auto', // fix for vertically unaligned icon
+                    }}
+                  >
+                    <CopyButton value={value} />
+                  </InputAdornment>
+                ),
               }}
             />
           );

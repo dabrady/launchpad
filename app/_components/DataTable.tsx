@@ -16,6 +16,7 @@ import { SxProps } from '@mui/material/styles';
 
 import { forwardRef, useEffect, useState } from 'react';
 
+import CopyButton from '@/_components/CopyButton';
 import useSnackbar from '@/_components/utils/useSnackbar';
 
 interface Props {
@@ -62,13 +63,19 @@ export default function DataTable({ data, serializer = _.toString, sx }: Props) 
                 hover
               >
                 <TableCell>{humanKey}:</TableCell>
-                <CopyableTableCell
-                  value={copyableValue}
-                  copyTooltip={`Copy '${humanKey}'`}
-                  onCopySuccess={serveSnack(`Copied '${copyableValue}' to clipboard`)}
-                >
-                  {renderedValue}
-                </CopyableTableCell>
+                <TableCell>
+                  <Stack
+                    direction='row'
+                    alignItems='center'
+                    justifyContent='space-between'
+                  >
+                    {renderedValue}
+                    <CopyButton
+                      value={copyableValue}
+                      onCopySuccess={serveSnack(`Copied '${copyableValue}' to clipboard`)}
+                    />
+                  </Stack>
+                </TableCell>
               </TableRow>
             );
           })}
@@ -77,114 +84,3 @@ export default function DataTable({ data, serializer = _.toString, sx }: Props) 
     </TableContainer>
   );
 }
-
-enum CopyError {
-  NotAvailable,
-  WriteError,
-}
-
-interface CopyProps {
-  children: React.ReactNode;
-  /**
-   * Copy tooltip text
-   */
-  copyTooltip?: string;
-  /**
-   * Handler triggered on copy to clipboard success
-   * @param {string} value
-   */
-  onCopySuccess?: (value: string) => void;
-  /**
-   * Handler triggered on copy to clipboard error
-   * @param {CopyError} value copied value
-   */
-  onCopyError?: (error: CopyError) => void;
-  /**
-   * Whether or not copying this field is explicitly disabled.
-   */
-  disabled: boolean;
-  /**
-   * The value to coerce to a string and copy to the user's clipboard
-   */
-  value: any;
-}
-
-function CopyableTableCell({
-  children,
-  copyTooltip,
-  onCopySuccess,
-  onCopyError,
-  value,
-  disabled: _disabled,
-}) {
-  var [disabled, setDisabled] = useState(_disabled);
-  useEffect(
-    function checkCopyability() {
-      if (_disabled) return;
-
-      var enabled = 'clipboard' in navigator;
-      setDisabled(!enabled);
-
-      if (!enabled) {
-        typeof onCopyError == 'function' && onCopyError(CopyError.NotAvailable);
-      }
-    },
-    [],
-  );
-  function copyText() {
-    if ('clipboard' in navigator) {
-      var copyableValue: string = typeof value == 'string'
-        ? value
-        : JSON.stringify(value);
-      navigator.clipboard.writeText(copyableValue).then(
-        function handleCopy() {
-          typeof onCopySuccess == 'function' && onCopySuccess(copyableValue);
-        },
-      ).catch(
-        function handleCopyError() {
-          typeof onCopyError == 'function' && onCopyError(CopyError.WriteError);
-        }
-      );
-    } else {
-      typeof onCopyError == 'function' && onCopyError(CopyError.NotAvailable);
-    }
-  }
-
-  return (
-    <TableCell>
-      <Stack
-        direction='row'
-        alignItems='center'
-        justifyContent='space-between'
-      >
-        {children}
-
-        <Tooltip title={disabled ? 'Sorry, copying is currently disabled' : copyTooltip}>
-          <IconButton
-            role='button'
-            disabled={disabled}
-            onClick={copyText}
-          >
-            <ContentCopy />
-          </IconButton>
-        </Tooltip>
-      </Stack>
-    </TableCell>
-  );
-}
-
-const IconButton = forwardRef(function IconButton(props, ref) {
-  return (
-    <MuiIconButton
-      ref={ref}
-      sx={{
-        root: {
-          '&.Mui-disabled': {
-            pointerEvents: 'auto',
-          },
-        },
-      }}
-      {...props}
-    />
-  )
-});
