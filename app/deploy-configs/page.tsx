@@ -135,7 +135,7 @@ function TabPanel({ index, currentTab, component }) {
             }
 
             return typeof value == 'object'
-                ? JSON.serialize(value)
+                ? JSON.stringify(value)
                 : value.toString();
           }
         }
