@@ -7,21 +7,19 @@ import {
   CircularProgress,
   InputAdornment,
   Paper,
+  Skeleton as Bone,
   Stack,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, SxProps } from '@mui/material/styles';
 
 import { useSearchParams } from 'next/navigation';
 
 import { useContext, useState } from 'react';
 
-import styles from './page.module.css';
-
-import AppBar from '@/_components/AppBar';
 import { AUTH_CONTEXT } from '@/_components/AuthGuard';
 import CopyButton from '@/_components/CopyButton';
 import DataTable from '@/_components/DataTable';
@@ -29,6 +27,7 @@ import Link from '@/_components/Link';
 import ScrollIndicator from '@/_components/ScrollIndicator';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
 import useSnackbar from '@/_components/utils/useSnackbar';
+
 
 const Fieldset = styled('fieldset')(
   function _styles({ theme }) {
@@ -51,71 +50,102 @@ const Fieldset = styled('fieldset')(
   }
 );
 
-export default function NewDeployConfig() {
+function Container({
+  children,
+  sx,
+}: {
+  children: React.ReactNode;
+  sx?: SxProps;
+}) {
+  return (
+    <Stack direction='row' spacing={2} sx={[
+      {
+        flex: 1,
+        width: '65vw',
+      },
+      ...(Array.isArray(sx) ? sx : [sx]),
+    ]}>
+      {children}
+    </Stack>
+  );
+}
+
+function Skeleton({ children }) {
+  return (
+    <Container>
+      <Bone variant='rectangular' width={170} height='55vh' />
+      <Stack direction='column' spacing={2} sx={{ flex: 1 }}>
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+      </Stack>
+    </Container>
+  );
+}
+
+export default function DeployConfigsPage() {
   var currentUser = useContext(AUTH_CONTEXT);
   var searchParams = useSearchParams();
   var targetComponents = searchParams.getAll('component');
-  var deployableComponents = useDeployableComponents(isEmpty(targetComponents) ? null : targetComponents);
+  var { deployableComponents, loading } = useDeployableComponents(
+    isEmpty(targetComponents) ? null : targetComponents
+  );
   var [currentTab, setCurrentTab] = useState(0);
+
+  if (loading) {
+    return <Skeleton />;
+  }
 
   if (!deployableComponents.length) {
     // TODO(dabrady) Render a better placeholder with instructions on how to install the GitHub App.
     return (
-      <Page>
+      <Container sx={{ paddingLeft: (theme) => theme.spacing(2) }}>
         <Typography>
           To configure a deployment, install&nbsp;
           <Link href='#' >
             your Launchpad app
           </Link>
-          &nbsp;on a GitHub repository.
+      &nbsp;on a GitHub repository.
         </Typography>
-      </Page>
+      </Container>
     );
   }
 
   return (
-    <Page>
-      <Typography variant='h3' sx={{
-        paddingBottom: (theme) => theme.spacing(4),
-        paddingLeft: (theme) => theme.spacing(2),
-        paddingRight: (theme) => theme.spacing(4),
-      }}>
-        Deploy Configuration
-      </Typography>
-
-      <Stack direction='row' spacing={2} sx={{
-        flex: 1,
-        minWidth: '65vw',
-      }}>
-        <Tabs
-          orientation='vertical'
-          value={currentTab}
-          onChange={(_, newTab) => setCurrentTab(newTab)}
-          sx={{
-            borderRight: 1, borderColor: 'divider'
-          }}
-        >
-          {deployableComponents.map(
-            function renderComponentTab(component, index) {
-              return <Tab key={index} label={component.name} />
-            },
-          )}
-        </Tabs>
-
+    <Container>
+      <Tabs
+        orientation='vertical'
+        value={currentTab}
+        onChange={(_, newTab) => setCurrentTab(newTab)}
+        sx={{
+          borderRight: 1,
+          borderColor: 'divider',
+        }}
+      >
         {deployableComponents.map(
-          function renderComponentConfigPanel(component, index) {
-            return (
-              <TabPanel
-                key={index}
-                index={index}
-                currentTab={currentTab}
-                component={component}
-              />
-            );
-          }
+          function renderComponentTab(component, index) {
+            return <Tab key={index} label={component.name} />
+          },
         )}
-      </Stack>
-    </Page>
+      </Tabs>
+
+      {deployableComponents.map(
+        function renderComponentConfigPanel(component, index) {
+          return (
+            <TabPanel
+              key={index}
+              index={index}
+              currentTab={currentTab}
+              component={component}
+            />
+          );
+        }
+      )}
+    </Container>
   );
 }
 
@@ -236,25 +266,4 @@ function TabPanel({ index, currentTab, component }) {
       </Fieldset>
     );
   }
-}
-
-function Page({ children }) {
-  return (
-    <main className={styles.main}>
-      <AppBar>
-        <Box sx={{ flex: 1 }}>
-          <Paper sx={{
-            paddingTop: (theme) => theme.spacing(4),
-            paddingBottom: (theme) => theme.spacing(4),
-            paddingLeft: (theme) => theme.spacing(2),
-            paddingRight: (theme) => theme.spacing(4),
-            borderRadius: '6px',
-            maxHeight: '80vh',
-          }}>
-            {children}
-          </Paper>
-        </Box>
-      </AppBar>
-    </main>
-  );
 }

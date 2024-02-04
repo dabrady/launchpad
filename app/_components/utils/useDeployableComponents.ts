@@ -15,7 +15,7 @@ import { firestore } from '#/firebase';
 import { DeployableComponent } from '@/types';
 
 function subscribe(
-  targetComponents: undefined | Pick<DeployableComponent, 'id'>[],
+  targetComponents?: Pick<DeployableComponent, 'id'>[],
   processNextSnapshot: (_: DeployableComponent[]) => void,
 ) {
   var collectionQuery = collection(firestore, 'deployable-components');
@@ -35,18 +35,27 @@ function subscribe(
   );
 }
 
-export default function useDeployableComponents(targetComponents: undefined | Pick<DeployableComponent, 'id'>[]) {
+export default function useDeployableComponents(targetComponents?: Pick<DeployableComponent, 'id'>[]) {
   var [
     deployableComponents,
     setDeployableComponents,
   ] = useState<DeployableComponent[]>([]);
+  var [loading, setLoading] = useState(true);
 
   useEffect(
     function subscribeToComponents() {
-      return subscribe(targetComponents, setDeployableComponents);
+      try {
+        return subscribe(targetComponents, function store(components) {
+          setDeployableComponents(components);
+          setLoading(false);
+        });
+      } catch (error){
+        setLoading(false);
+        throw error;
+      }
     },
     [],
   );
 
-  return deployableComponents;
+  return { deployableComponents, loading };
 }

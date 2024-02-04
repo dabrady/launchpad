@@ -6,3 +6,15 @@
   padding: 6rem 6rem 4rem 6rem;
   min-height: 100vh;
 }
+
+.paper {
+  border-radius: 6px;
+  max-height: 80vh;
+}
+.paper, .paper .title {
+  padding: 2rem;
+  padding-left: 1rem;
+}
+.paper .title {
+  padding-top: 0;
+}

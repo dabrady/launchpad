@@ -50,7 +50,7 @@ const PULL_REQUEST_ACTIONS: {
 };
 
 export default function Home() {
-  var deployableComponents: DeployableComponent[] = useDeployableComponents();
+  var { deployableComponents }: DeployableComponent[] = useDeployableComponents();
   var currentUser = useContext(AUTH_CONTEXT);
 
   return (

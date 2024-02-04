@@ -43,7 +43,7 @@ export function DeployButton({ pullRequest }: DeployButtonProps) {
   var owner = useContext(AUTH_CONTEXT);
   var { targetEnv } = useTargetEnvironment();
 
-  var deployableComponents: DeployableComponent[] = useDeployableComponents();
+  var { deployableComponents } = useDeployableComponents();
   var targetComponent = deployableComponents.find(({ id }) => id == componentId);
   var [deployments] = useActiveDeployments([targetComponent], targetEnv);
 
