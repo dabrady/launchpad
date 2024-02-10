@@ -1,12 +1,28 @@
 'use client';
 
 import { Timestamp } from 'firebase/firestore';
-import { isEmpty, map, omit, pick, startCase } from 'lodash';
+import {
+  isEmpty,
+  keys,
+  map,
+  omit,
+  pick,
+  startCase,
+} from 'lodash';
+import {
+  ArrowDropDown as ArrowDropDownIcon,
+} from '@mui/icons-material'
 import {
   Box,
-  CircularProgress,
+  Button,
+  ButtonGroup,
+  ClickAwayListener,
+  Grow,
   InputAdornment,
+  MenuItem,
+  MenuList,
   Paper,
+  Popper,
   Skeleton as Bone,
   Stack,
   Tab,
@@ -18,7 +34,7 @@ import { styled, SxProps } from '@mui/material/styles';
 
 import { useSearchParams } from 'next/navigation';
 
-import { useContext, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 
 import { AUTH_CONTEXT } from '@/_components/AuthGuard';
 import CopyButton from '@/_components/CopyButton';
@@ -50,43 +66,6 @@ const Fieldset = styled('fieldset')(
   }
 );
 
-function Container({
-  children,
-  sx,
-}: {
-  children: React.ReactNode;
-  sx?: SxProps;
-}) {
-  return (
-    <Stack direction='row' spacing={2} sx={[
-      {
-        flex: 1,
-        width: '65vw',
-      },
-      ...(Array.isArray(sx) ? sx : [sx]),
-    ]}>
-      {children}
-    </Stack>
-  );
-}
-
-function Skeleton({ children }) {
-  return (
-    <Container>
-      <Bone variant='rectangular' width={170} height='55vh' />
-      <Stack direction='column' spacing={2} sx={{ flex: 1 }}>
-        <Bone variant='rectangular' sx={{ flex: 1}} />
-        <Bone variant='rectangular' sx={{ flex: 1}} />
-        <Bone variant='rectangular' sx={{ flex: 1}} />
-        <Bone variant='rectangular' sx={{ flex: 1}} />
-        <Bone variant='rectangular' sx={{ flex: 1}} />
-        <Bone variant='rectangular' sx={{ flex: 1}} />
-        <Bone variant='rectangular' sx={{ flex: 1}} />
-      </Stack>
-    </Container>
-  );
-}
-
 export default function DeployConfigsPage() {
   var currentUser = useContext(AUTH_CONTEXT);
   var searchParams = useSearchParams();
@@ -116,7 +95,11 @@ export default function DeployConfigsPage() {
   }
 
   return (
-    <Container>
+    <Container actions={{
+      [Actions.SAVE]: null,//() => { console.log('saving'); },
+      [Actions.DISCARD]: null,//() => { console.log('discarding'); },
+      [Actions.DESTROY]: () => { console.log('destroying'); },
+    }}>
       <Tabs
         orientation='vertical'
         value={currentTab}
@@ -133,18 +116,60 @@ export default function DeployConfigsPage() {
         )}
       </Tabs>
 
-      {deployableComponents.map(
-        function renderComponentConfigPanel(component, index) {
-          return (
-            <TabPanel
-              key={index}
-              index={index}
-              currentTab={currentTab}
-              component={component}
-            />
-          );
-        }
-      )}
+      <TabPanel
+        key={currentTab}
+        index={currentTab}
+        component={deployableComponents[currentTab]}
+      />
+    </Container>
+  );
+}
+
+/** **** **/
+
+function Container({
+  children,
+  sx,
+  actions = null,
+}: {
+  children: React.ReactNode;
+  sx?: SxProps;
+  actions?: {
+    [label: string]: () => void;
+  };
+}) {
+  return (
+    <Stack direction='column' spacing={3} alignItems='flex-end' sx={{
+
+    }}>
+      <Stack direction='row' spacing={2} sx={[
+        {
+          flex: 1,
+          width: '65vw',
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}>
+        {children}
+      </Stack>
+
+      {actions && <ActionsButton actions={actions} />}
+    </Stack>
+  );
+}
+
+function Skeleton({ children }) {
+  return (
+    <Container>
+      <Bone variant='rectangular' width={170} height='55vh' />
+      <Stack direction='column' spacing={2} sx={{ flex: 1 }}>
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+        <Bone variant='rectangular' sx={{ flex: 1}} />
+      </Stack>
     </Container>
   );
 }
@@ -154,27 +179,23 @@ const EDITABLE_FIELDS = [
   'staging_branch',
   'deploy_api',
 ];
-function TabPanel({ index, currentTab, component }) {
+function TabPanel({ index, component }) {
   var [panelRef, setPanelRef] = useState(null);
   var { serveSnack, snackbar } = useSnackbar({
     autoHideDuration: 2500,
     anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
   });
-  function affirmDataCopy(copiedValue: string) {
-    serveSnack(`Copied '${copiedValue}' to clipboard`);
-  }
 
-  if (index != currentTab) {
-    return null;
-  }
   var readonlyFields = omit(component, EDITABLE_FIELDS);
   var editableFields = pick(component, EDITABLE_FIELDS);
+
   return (
     <Box ref={(ref) => setPanelRef(ref)} sx={{
       flex: 1,
       padding: (theme) => theme.spacing(2),
       overflowY: 'auto',
       maxHeight: '55vh',
+      borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
     }}>
       {/* Readonly fields */}
       <DataTable
@@ -205,6 +226,10 @@ function TabPanel({ index, currentTab, component }) {
   );
 
   /** **** **/
+
+  function affirmDataCopy(copiedValue: string) {
+    serveSnack(`Copied '${copiedValue}' to clipboard`);
+  }
 
   function renderEditableField(value, key) {
     var label = startCase(key);
@@ -266,4 +291,80 @@ function TabPanel({ index, currentTab, component }) {
       </Fieldset>
     );
   }
+}
+
+enum Actions {
+  SAVE = 'Save changes',
+  DISCARD = 'Discard changes',
+  DESTROY = 'Destroy this config',
+}
+function ActionsButton({
+  actions,
+}: {
+  actions: { [label in Actions]: () => void; };
+}) {
+  var menuAnchor = useRef(null);
+  var [openMenu, setOpenMenu] = useState(false);
+  var saveAction = actions[Actions.SAVE];
+  return (
+    <>
+      <ButtonGroup variant='contained' ref={menuAnchor}>
+        <Button
+          disabled={!saveAction}
+          onClick={saveAction}
+        >
+          {Actions.SAVE}
+        </Button>
+        <Button size='small' onClick={() => setOpenMenu((state) => !state)}>
+          <ArrowDropDownIcon />
+        </Button>
+      </ButtonGroup>
+
+      <Popper
+        sx={{ zIndex: 1 }}
+        open={openMenu}
+        transition
+        disablePortal
+        anchorEl={menuAnchor.current}
+      >
+        {function render({ TransitionProps, placement }) {
+          return (
+            <Grow
+              {...TransitionProps}
+              style={{
+                transformOrigin: placement == 'bottom'
+                  ? 'right top'
+                  : 'right bottom',
+              }}
+            >
+              <Paper>
+                <ClickAwayListener onClickAway={() => setOpenMenu(false)}>
+                  <MenuList>
+                    {map(omit(Actions, 'SAVE'),
+                      function renderAction(label, key) {
+                        var action = actions[label];
+                        var disabled = !action;
+                        return (
+                          <MenuItem
+                            key={key}
+                            disabled={disabled}
+                            onClick={action ? () => {
+                              action();
+                              setOpenMenu(false);
+                            } : null}
+                          >
+                            {label}
+                          </MenuItem>
+                        );
+                      }
+                    )}
+                  </MenuList>
+                </ClickAwayListener>
+              </Paper>
+            </Grow>
+          );
+        }}
+      </Popper>
+    </>
+  );
 }
