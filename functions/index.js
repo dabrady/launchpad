@@ -176,8 +176,7 @@ export const isPullRequestDeployable = onRequest(
   function isDeployable(request, response) {
     if (request.method == 'OPTIONS') {
       logger.debug('Skipping OPTIONS requests');
-      response.status(204).send();
-      return;
+      return response.status(204).send();
     }
 
     var {
@@ -260,14 +259,13 @@ app.webhooks.on(
         break;
       }
 
-      registerOrUpdate(pullRequest)
+      return registerOrUpdate(pullRequest)
         .then(function reportSuccess(location) {
           logger.info(`Pull request tracked: ${location}`);
         }).catch(function addContextToFailure(err) {
           logger.error('Pull request tracking failed');
           throw err;
         });
-      break;
     }
 
     // when title, body, or base branch is modified
@@ -278,7 +276,7 @@ app.webhooks.on(
         break;
       }
       if (deployableBranches.includes(pullRequest.base.ref)) {
-        registerOrUpdate(pullRequest)
+        return registerOrUpdate(pullRequest)
           .then(function reportSuccess(location) {
             logger.info(`Pull request tracked: ${location}`);
           }).catch(function addContextToFailure(err) {
@@ -286,7 +284,7 @@ app.webhooks.on(
             throw err;
           });
       } else {
-        disqualify(pullRequest)
+        return disqualify(pullRequest)
           .then(function reportSuccess(docPath) {
             logger.info(`Pull request disqualified: ${docPath}`);
           }).catch(function addContextToFailure(err) {
@@ -294,7 +292,6 @@ app.webhooks.on(
             throw err;
           });
       }
-      break;
     }
 
     case 'closed': {
@@ -306,18 +303,17 @@ app.webhooks.on(
     }
     // eslint-disable-next-line no-fallthrough
     case 'converted_to_draft': {
-      disqualify(pullRequest)
+      return disqualify(pullRequest)
         .then(function reportSuccess(docPath) {
           logger.info(`Pull request disqualified: ${docPath}`);
         }).catch(function addContextToFailure(err) {
           logger.error('Pull request disqualification failed');
           throw err;
         });
-      break;
     }
 
     default: {
-      logger.warn(`Unhandlede pull_request action: ${payload.action}`);
+      logger.warn(`Unhandled pull_request action: ${payload.action}`);
       break;
     }
     }
