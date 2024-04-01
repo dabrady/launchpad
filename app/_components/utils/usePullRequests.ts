@@ -5,11 +5,11 @@ import {
   getDocs,
   onSnapshot,
   query,
-  serverTimestamp,
   updateDoc,
   where,
   FirestoreError,
   QuerySnapshot,
+  Timestamp,
   Unsubscribe,
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from "react";
@@ -75,7 +75,7 @@ export function updatePullRequest(
     doc(firestore, `deployable-components/${componentId}/pull-requests/${id}`),
     {
       ...updates,
-      timestamp: serverTimestamp(),
+      updated_at: Timestamp.now(),
     },
   );
 }

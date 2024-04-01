@@ -7,11 +7,11 @@ import {
   getDocs,
   onSnapshot,
   query,
-  serverTimestamp,
   updateDoc,
   where,
   FirestoreError,
   QuerySnapshot,
+  Timestamp,
   Unsubscribe,
 } from 'firebase/firestore';
 import { useEffect, useRef, useState } from "react";
@@ -124,8 +124,8 @@ export function createDeployment(
       state: DeploymentState.ENQUEUED,
       target: targetEnv,
       displayName: `${repoName} #${number}`,
-      created_at: serverTimestamp(),
-      updated_at: serverTimestamp(),
+      created_at: Timestamp.now(),
+      updated_at: Timestamp.now(),
     } as Omit<Deployment, 'id'>,
   );
 }
