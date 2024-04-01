@@ -1,11 +1,14 @@
 import {
   collection,
+  doc as document,
   documentId,
   onSnapshot,
   query,
+  updateDoc,
   where,
   FirestoreError,
   QuerySnapshot,
+  Timestamp,
   Unsubscribe,
 } from 'firebase/firestore';
 import { useEffect, useState } from "react";
@@ -35,7 +38,9 @@ function subscribe(
   );
 }
 
-export default function useDeployableComponents(targetComponents?: Pick<DeployableComponent, 'id'>[]) {
+export default function useDeployableComponents(
+  targetComponents?: Pick<DeployableComponent, 'id'>[]
+) {
   var [
     deployableComponents,
     setDeployableComponents,
@@ -57,5 +62,19 @@ export default function useDeployableComponents(targetComponents?: Pick<Deployab
     [],
   );
 
-  return { deployableComponents, loading };
+  return {
+    deployableComponents,
+    loading,
+    updateComponent: (
+      async function updateComponent(component: DeployableComponent) {
+        return updateDoc(
+          document(firestore, 'deployable-components', component.id),
+          {
+            ...component,
+            updated_at: Timestamp.now(),
+          },
+        );
+      }
+    )
+  };
 }

@@ -13,6 +13,7 @@ import {
 import {
   ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material'
+import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
   Box,
@@ -73,7 +74,11 @@ export default function DeployConfigsPage() {
   var currentUser = useContext(AUTH_CONTEXT);
   var searchParams = useSearchParams();
   var targetComponents = searchParams.getAll('component');
-  var { deployableComponents, loading } = useDeployableComponents(
+  var {
+    deployableComponents,
+    loading,
+    updateComponent,
+  } = useDeployableComponents(
     isEmpty(targetComponents) ? null : targetComponents
   );
   var [currentTab, setCurrentTab] = useState(0);
@@ -88,10 +93,12 @@ export default function DeployConfigsPage() {
     mode: 'onTouched',
     defaultValues: useMemo(() => activeConfig, [JSON.stringify(activeConfig)]),
   });
+  var { errors, isDirty, isSubmitting } = formState;
   useEffect(() => {
-    reset(activeConfig);
-  }, [JSON.stringify(activeConfig)]);
-  var { errors, isDirty } = formState;
+    if (!isSubmitting) {
+      reset(activeConfig);
+    }
+  }, [isSubmitting, JSON.stringify(activeConfig)]);
 
   if (loading) {
     return <Skeleton />;
@@ -113,14 +120,16 @@ export default function DeployConfigsPage() {
   }
 
   return (
-    <Container actions={{
-      [Actions.SAVE]: isDirty && isEmpty(errors)
-        ? handleSubmit((data) => { console.log(data); })
-        : null,
-      [Actions.DISCARD]: isDirty
-        ? () => reset(activeConfig)
-        : null,
-    }}>
+    <Container actions={
+      <ActionsButton isSubmitting={isSubmitting} actions={{
+        [Actions.SAVE]: isDirty && isEmpty(errors)
+          ? handleSubmit(updateComponent)
+          : null,
+        [Actions.DISCARD]: isDirty
+          ? () => reset(activeConfig)
+          : null,
+      }}/>
+    }>
       <Tabs
         orientation='vertical'
         value={currentTab}
@@ -160,9 +169,10 @@ function Container({
 }: {
   children: React.ReactNode;
   sx?: SxProps;
-  actions?: {
-    [label: string]: () => void;
-  };
+  /* actions?: {
+   *   [label: string]: () => void;
+   * }; */
+  actions?: React.ReactNode;
 }) {
   return (
     <Stack direction='column' spacing={3} alignItems='flex-end' sx={{
@@ -178,7 +188,7 @@ function Container({
         {children}
       </Stack>
 
-      {actions && <ActionsButton actions={actions} />}
+      {actions}
     </Stack>
   );
 }
@@ -328,8 +338,10 @@ enum Actions {
 }
 function ActionsButton({
   actions,
+  isSubmitting,
 }: {
   actions: { [label in Actions]: () => void; };
+  isSubmitting: boolean;
 }) {
   var menuAnchor = useRef(null);
   var [openMenu, setOpenMenu] = useState(false);
@@ -337,12 +349,13 @@ function ActionsButton({
   return (
     <>
       <ButtonGroup variant='contained' ref={menuAnchor}>
-        <Button
+        <LoadingButton
+          loading={isSubmitting}
           disabled={!saveAction}
           onClick={saveAction}
         >
           {Actions.SAVE}
-        </Button>
+        </LoadingButton>
         <Button size='small' onClick={() => setOpenMenu((state) => !state)}>
           <ArrowDropDownIcon />
         </Button>
