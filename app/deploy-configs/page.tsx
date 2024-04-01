@@ -20,6 +20,9 @@ import {
   Button,
   ButtonGroup,
   ClickAwayListener,
+  Dialog,
+  DialogActions,
+  DialogTitle,
   Grow,
   InputAdornment,
   MenuItem,
@@ -83,6 +86,7 @@ export default function DeployConfigsPage() {
   );
   var [currentTab, setCurrentTab] = useState(0);
   var activeConfig = deployableComponents[currentTab];
+  var [confirmDiscard, setConfirmDiscard] = useState({ open: false, nextTab: null });
 
   var {
     register,
@@ -135,8 +139,12 @@ export default function DeployConfigsPage() {
         value={currentTab}
         onChange={(_, newTab) => {
           // TODO(dabrady) Alert & confirm instead of just discarding;
-          reset();
-          setCurrentTab(newTab);
+          if (isDirty) {
+            setConfirmDiscard({ open: true, nextTab: newTab });
+          } else {
+            reset();
+            setCurrentTab(newTab);
+          }
         }}
         sx={{
           borderRight: 1,
@@ -155,6 +163,15 @@ export default function DeployConfigsPage() {
         component={activeConfig}
         registerField={register}
         formErrors={errors}
+      />
+      <DiscardConfirmationDialog
+        open={confirmDiscard.open}
+        onCancel={() => setConfirmDiscard({ open: false, nextTab: null })}
+        onConfirm={() => {
+          reset();
+          setCurrentTab(confirmDiscard.nextTab);
+          setConfirmDiscard({ open: false, nextTab: null });
+        }}
       />
     </Container>
   );
@@ -407,5 +424,53 @@ function ActionsButton({
         }}
       </Popper>
     </>
+  );
+}
+
+function DiscardConfirmationDialog({
+  open,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      maxWidth='xs'
+      fullWidth={true}
+      // NOTE(dabrady) This positions the modal slightly off-center, vertically speaking.
+      sx={{
+        '& .MuiDialog-container': {
+          flexDirection: 'column',
+        },
+        '& .MuiDialog-container:after': {
+          content: '""',
+          flexBasis: '40%',
+        }
+      }}
+    >
+      <DialogTitle>
+        Discard unsaved changes?
+      </DialogTitle>
+
+      <DialogActions>
+        <Button
+          autoFocus
+          onClick={onCancel}
+        >
+          Go back
+        </Button>
+        <Button
+          color='warning'
+          onClick={onConfirm}
+        >
+          Discard
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
