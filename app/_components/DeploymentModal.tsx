@@ -589,14 +589,23 @@ function BetterLink({ href, displayText, sx = [] }: BetterLinkProps) {
     <Link
       href={href}
       color='inherit'
-      underline='none'
       target='_blank'
       rel='noopener'
       sx={[
         {
-          transition: 'color 0.125s linear',
-          '&:hover': {
-            color: (theme) => theme.palette.primary.main,
+          'a': {
+            color: 'inherit',
+            textDecoration: 'none',
+            '& .MuiLink-root': {
+              transition: '0.125s linear',
+              transitionProperty: 'color, text-decoration-color',
+              textDecoration: 'none',
+              textDecorationColor: 'transparent',
+              '&:hover': {
+                color: (theme) => theme.palette.primary.main,
+                textDecoration: 'underline',
+              },
+            }
           },
         },
         ...(Array.isArray(sx) ? sx : [sx]),
