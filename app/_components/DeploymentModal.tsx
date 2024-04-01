@@ -1,7 +1,7 @@
 'use client';
 
 import dayjs from 'dayjs';
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   Close as CloseIcon,
@@ -11,6 +11,7 @@ import {
   useMediaQuery,
   Box,
   Button,
+  DialogContent,
   IconButton,
   Modal,
   Stack,
@@ -92,52 +93,54 @@ export default function DeploymentModal({
         }
       }
     >
-      <ModalContents
-        state={state}
-        timestamp={updated_at.toDate()}
-        onClose={onClose}
-      >
-        <ModalHeader smallScreen={smallScreen}>
-          <Stack>
-            <Title>
-              <BetterLink href={url} displayText={displayName}/>
-            </Title>
-            <Subtitle>{massagedTitle}</Subtitle>
-          </Stack>
+      <DialogContent>
+        <ModalContents
+          state={state}
+          timestamp={updated_at.toDate()}
+          onClose={onClose}
+        >
+          <ModalHeader smallScreen={smallScreen}>
+            <Stack>
+              <Title>
+                <BetterLink href={url} displayText={displayName}/>
+              </Title>
+              <Subtitle>{massagedTitle}</Subtitle>
+            </Stack>
 
-          {/* <BetterLink href={authorUrl} displayText={handle} /> */}
-          <DataTable smallScreen={smallScreen} data={{
-            State: () => [state, Chips[state]],
-            Author: () => ([
-              handle,
-              <BetterLink sx={{ fontFamily: 'monospace' }} href={authorUrl} displayText={handle} />
-            ]),
-            // TODO(dabrady) make real links once we have 'component config'
-            ...(ticketNumber ? {
-              Ticket: () => {
-                return [
-                  ticketNumber,
-                  <BetterLink
-                    href={`https://trello.com/c/fvVuRsDr/${ticketNumber}`}
-                    displayText={`#${ticketNumber}`}
-                    sx={{ fontFamily: 'monospace' }}
-                  />
-                ];
-              },
-            } : {}),
-          }} />
-        </ModalHeader>
+            {/* <BetterLink href={authorUrl} displayText={handle} /> */}
+            <DataTable smallScreen={smallScreen} data={{
+              State: () => [state, Chips[state]],
+              Author: () => ([
+                handle,
+                <BetterLink sx={{ fontFamily: 'monospace' }} href={authorUrl} displayText={handle} />
+              ]),
+              // TODO(dabrady) make real links once we have 'component config'
+              ...(ticketNumber ? {
+                Ticket: () => {
+                  return [
+                    ticketNumber,
+                    <BetterLink
+                      href={`https://trello.com/c/fvVuRsDr/${ticketNumber}`}
+                      displayText={`#${ticketNumber}`}
+                      sx={{ fontFamily: 'monospace' }}
+                    />
+                  ];
+                },
+              } : {}),
+            }} />
+          </ModalHeader>
 
-        <BetterStepper stepLabels={stepLabels}>
-          {function renderActiveStep(activeStep, markStepCompleted) {
-            return DEPLOYMENT_STEPS[stepLabels[activeStep]]({
-              smallScreen,
-              activeStep,
-              markStepCompleted,
-            });
-          }}
-        </BetterStepper>
-      </ModalContents>
+          <BetterStepper stepLabels={stepLabels}>
+            {function renderActiveStep(activeStep, markStepCompleted) {
+              return DEPLOYMENT_STEPS[stepLabels[activeStep]]({
+                smallScreen,
+                activeStep,
+                markStepCompleted,
+              });
+            }}
+          </BetterStepper>
+        </ModalContents>
+      </DialogContent>
     </Modal>
   );
 }
@@ -151,20 +154,16 @@ interface ModalContentsProps extends StackProps {
   timestamp: Date;
   sx?: SxProps;
 }
-const ModalContents = forwardRef<HTMLDivElement, ModalContentsProps>(function ModalContents(
-  {
-    children,
-    onClose,
-    state,
-    timestamp,
-    sx = [],
-  },
-  ref,
-) {
+function ModalContents({
+  children,
+  onClose,
+  state,
+  timestamp,
+  sx = [],
+}: ModalContentsProps) {
   return (
     <Stack
       id='modal-contents'
-      ref={ref}
       sx={[
         {
           position: 'absolute',
@@ -253,7 +252,7 @@ const ModalContents = forwardRef<HTMLDivElement, ModalContentsProps>(function Mo
       </Box>
     </Stack>
   );
-});
+}
 
 interface ModalHeaderProps {
   children: React.ReactNode;
