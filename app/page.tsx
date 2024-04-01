@@ -29,6 +29,7 @@ import AppBar from '@/_components/AppBar';
 import { AUTH_CONTEXT } from '@/_components/AuthGuard';
 import EligiblePullRequests from '@/_components/EligiblePullRequests';
 import DeploymentHistory from '@/_components/DeploymentHistory';
+import LinkButton from '@/_components/LinkButton';
 import useDeployableComponents from '@/_components/utils/useDeployableComponents';
 
 import styles from './page.module.css';
@@ -48,14 +49,15 @@ const PULL_REQUEST_ACTIONS: {
   ]),
 };
 
-
 export default function Home() {
-  var deployableComponents: DeployableComponent[] = useDeployableComponents();
+  var { deployableComponents }: DeployableComponent[] = useDeployableComponents();
   var currentUser = useContext(AUTH_CONTEXT);
 
   return (
-    <AppBar withEnvSwitcher>
-      <main className={styles.main}>
+    <main className={styles.main}>
+      <AppBar withEnvSwitcher tools={[
+        <LinkButton href='/deploy-configs'>Configuration</LinkButton>
+      ]}>
         <Stack spacing={10}>
           {/* NOTE(dabrady) Add component filter as we grow. */}
           <EligiblePullRequests
@@ -69,7 +71,7 @@ export default function Home() {
 
           <DeploymentHistory />
         </Stack>
-      </main>
-    </AppBar>
+      </AppBar>
+    </main>
   );
 }

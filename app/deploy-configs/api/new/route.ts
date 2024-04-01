@@ -23,9 +23,15 @@ export function GET(request: NextRequest) {
       return notFound();
     }
   ).then(
-    function processResponse(result) {
-      // TODO(dabrady) Use response body to index into the new config page
-      return redirect('/deploy-configs');
+    function loadConfigEditor({ data: newComponents }) {
+      var redirectParams = new URLSearchParams(
+        newComponents.map(
+          function makeParam({ id }) {
+            return ['component', id]
+          }
+        ),
+      );
+      return redirect(`/deploy-configs?${redirectParams}`);
     }
     // NOTE(dabrady) It is important that there is no `catch` here, because Next.js
     // `redirect` function works by throwing an error; an overall catch would thus

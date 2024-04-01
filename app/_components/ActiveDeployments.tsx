@@ -5,7 +5,6 @@ import dayjs from 'dayjs';
 import {
   Box,
   Button,
-  Link,
   Typography,
 } from '@mui/material';
 import {
@@ -26,6 +25,7 @@ import {
 } from '@/types';
 import { Chips } from '@/_components/constants';
 import DeploymentModal from '@/_components/DeploymentModal';
+import Link from '@/_components/Link';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 import { useActiveDeployments } from '@/_components/utils/useDeployments';
 

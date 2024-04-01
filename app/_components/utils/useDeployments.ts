@@ -63,10 +63,6 @@ function useDeployments(
   const [deployments, setDeployments] = useState<{ [key: string]: Deployment[] }>({});
   const [loadedComponents, setLoadedComponents] = useState(0);
 
-  // Remove any nil values. This can happen on initial render, if the source of
-  // the components is `useDeployableComponents` and hasn't finished fetching.
-  components = components.filter(Boolean);
-
   useEffect(() => {
     if (!components?.length) return;
 
@@ -134,7 +130,14 @@ export function createDeployment(
   );
 }
 
-export function useDeploymentHistory(components: DeployableComponent[], targetEnv: Environment) {
+export function useDeploymentHistory(
+  _components: Array<null | undefined | DeployableComponent>,
+  targetEnv: Environment,
+) {
+  // Remove any nil values. This can happen on initial render, if the source of
+  // the components is `useDeployableComponents` and hasn't finished fetching.
+  const components: DeployableComponent[] = _components.filter(Boolean);
+
   return useDeployments(
     components,
     targetEnv,
@@ -147,7 +150,14 @@ export function useDeploymentHistory(components: DeployableComponent[], targetEn
   );
 }
 
-export function useActiveDeployments(components: DeployableComponent[], targetEnv: Environment) {
+export function useActiveDeployments(
+  _components: Array<null | undefined | DeployableComponent>,
+  targetEnv: Environment,
+) {
+  // Remove any nil values. This can happen on initial render, if the source of
+  // the components is `useDeployableComponents` and hasn't finished fetching.
+  const components: DeployableComponent[] = _components.filter(Boolean);
+
   return useDeployments(
     components,
     targetEnv,

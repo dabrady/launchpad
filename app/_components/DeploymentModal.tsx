@@ -12,7 +12,6 @@ import {
   Box,
   Button,
   IconButton,
-  Link,
   Modal,
   Stack,
   StackProps,
@@ -21,17 +20,14 @@ import {
   StepButton,
   StepLabel,
   Stepper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
   Typography,
 } from '@mui/material';
 import { styled, useTheme, SxProps } from '@mui/material/styles';
 
 import { Deployment, DeploymentState } from '@/types';
 import { Chips } from '@/_components/constants';
+import DataTable from '@/_components/DataTable';
+import Link from '@/_components/Link';
 
 const DEPLOYMENT_STEPS: {
   [k: string]: (props: {
@@ -111,20 +107,22 @@ export default function DeploymentModal({
 
           {/* <BetterLink href={authorUrl} displayText={handle} /> */}
           <DataTable smallScreen={smallScreen} data={{
-            State: Chips[state],
-            Author: () => (
+            State: () => [state, Chips[state]],
+            Author: () => ([
+              handle,
               <BetterLink sx={{ fontFamily: 'monospace' }} href={authorUrl} displayText={handle} />
-            ),
+            ]),
             // TODO(dabrady) make real links once we have 'component config'
             ...(ticketNumber ? {
               Ticket: () => {
-                return (
+                return [
+                  ticketNumber,
                   <BetterLink
                     href={`https://trello.com/c/fvVuRsDr/${ticketNumber}`}
                     displayText={`#${ticketNumber}`}
                     sx={{ fontFamily: 'monospace' }}
                   />
-                );
+                ];
               },
             } : {}),
           }} />
@@ -621,42 +619,6 @@ function BetterLink({ href, displayText, sx = [] }: BetterLinkProps) {
         </Box>
       </Box>
     </Link>
-  );
-}
-
-interface DataTableProps {
-  data: { [k: string]: any };
-  smallScreen?: boolean;
-}
-function DataTable({ data, smallScreen }: DataTableProps) {
-  return (
-    <TableContainer sx={{
-      width: 'auto',
-    }}>
-      <Table>
-        <TableBody sx={{
-          '& td': {
-            padding: (theme) => theme.spacing(1.5),
-          },
-        }}>
-          {Object.keys(data).map(function renderItem(key, index) {
-            var value = data[key];
-            var renderedValue = typeof value == 'function'
-              ? value()
-              : <code>{value}</code>;
-            return (
-              <TableRow
-                key={index}
-                hover
-              >
-                <TableCell>{key}:</TableCell>
-                <TableCell>{renderedValue}</TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
   );
 }
 

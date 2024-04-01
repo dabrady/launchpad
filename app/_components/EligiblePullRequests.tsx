@@ -2,7 +2,6 @@
 import {
   Box,
   CircularProgress,
-  Link,
   Stack,
   Table,
   TableBody,
@@ -15,6 +14,7 @@ import {
 
 import { DeployableComponent, PullRequest, PullRequestState } from '@/types';
 import { Chips } from '@/_components/constants';
+import Link from '@/_components/Link';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 import usePullRequests from '@/_components/utils/usePullRequests';
 
