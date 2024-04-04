@@ -39,7 +39,6 @@ const COLUMNS: GridColDef<TDeployment>[] = [
     field: 'state',
     headerName: '',
     width: 150,
-    headerAlign: 'center',
     align: 'center',
     renderCell: function Chip({ value }) {
       return Chips[value as DeploymentState];
@@ -49,9 +48,8 @@ const COLUMNS: GridColDef<TDeployment>[] = [
     sortable: false,
     field: 'displayName',
     headerName: 'What?',
-    width: 150,
-    headerAlign: 'center',
-    align: 'center',
+    minWidth: 120,
+    flex: 2,
     renderCell: function PullRequestLink({ row, value }) {
       return (
         <Link href={row.pullRequest.url} underline='hover'>
@@ -64,9 +62,8 @@ const COLUMNS: GridColDef<TDeployment>[] = [
     sortable: false,
     field: 'owner',
     headerName: 'Who?',
-    width: 150,
-    headerAlign: 'center',
-    align: 'center',
+    minWidth: 120,
+    flex: 1,
     valueGetter: function getOwnerName(params) {
       return params.value.name;
     }
@@ -77,8 +74,6 @@ const COLUMNS: GridColDef<TDeployment>[] = [
     field: 'id',
     headerName: '',
     width: 150,
-    headerAlign: 'center',
-    align: 'center',
     renderCell: function Actions({ row }) {
       var [openDeployment, setOpenDeployment] = useState(false);
       return (
