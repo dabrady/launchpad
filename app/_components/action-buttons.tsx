@@ -81,7 +81,7 @@ export function DeployButton({ pullRequest }: DeployButtonProps) {
       <Dialog
         open={openDialog}
         onClose={loading ? undefined : () => setOpenDialog(false)}
-        maxWidth='xs'
+        maxWidth='sm'
         fullWidth={true}
         // NOTE(dabrady) This positions the modal slightly off-center, vertically speaking.
         sx={{
@@ -111,7 +111,11 @@ export function DeployButton({ pullRequest }: DeployButtonProps) {
           </Typography>?
         </DialogTitle>
 
-        <DialogContent>{title}</DialogContent>
+        <DialogContent sx={{
+          paddingBottom: (theme) => theme.spacing(4),
+        }}>
+          {title}
+        </DialogContent>
 
         <DialogActions>
           {!loading && (
