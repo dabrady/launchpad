@@ -55,10 +55,6 @@ export default function DeploymentModal({
     pullRequest: {
       url,
       title,
-      author: {
-        handle,
-        url: authorUrl,
-      }
     },
     owner: {
       id: ownerId,
@@ -108,12 +104,11 @@ export default function DeploymentModal({
               <Subtitle>{massagedTitle}</Subtitle>
             </Stack>
 
-            {/* <BetterLink href={authorUrl} displayText={handle} /> */}
             <DataTable smallScreen={smallScreen} data={{
               State: () => [state, Chips[state]],
-              Author: () => ([
-                handle,
-                <BetterLink sx={{ fontFamily: 'monospace' }} href={authorUrl} displayText={handle} />
+              Owner: () => ([
+                ownerName,
+                <Typography sx={{ fontFamily: 'monospace' }}>{ownerName}</Typography>
               ]),
               // TODO(dabrady) make real links once we have 'component config'
               ...(ticketNumber ? {
