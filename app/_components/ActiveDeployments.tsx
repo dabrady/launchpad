@@ -139,6 +139,11 @@ export default function ActiveDeployments({ components }: Props) {
         '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-cell:focus-within': {
           outline: 'none',
         },
+        // Wrap cells
+        '& .MuiDataGrid-cell': {
+          whiteSpace: 'normal !important',
+          wordWrap: 'break-word !important',
+        },
       }}
     />
   );
