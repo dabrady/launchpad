@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Close as CloseIcon,
   OpenInNew as OpenInNewIcon,
+  RocketLaunch as RocketLaunchIcon,
 } from '@mui/icons-material';
 import {
   useMediaQuery,
@@ -38,7 +39,7 @@ const DEPLOYMENT_STEPS: {
   }) => React.ReactNode;
 } = {
   Deploy: ({ smallScreen, ...rest }) => <DeployStep showLogs={!smallScreen} {...rest}/>,
-  Verify: ({ smallScreen }) => <VerifyStep />,
+  Verify: ({ smallScreen, ...rest }) => <VerifyStep {...rest}/>,
   Merge: ({ smallScreen }) => <MergeStep />,
 };
 
@@ -131,11 +132,12 @@ export default function DeploymentModal({
           </ModalHeader>
 
           <BetterStepper stepLabels={stepLabels}>
-            {function renderActiveStep(activeStep, markStepCompleted) {
+            {function renderActiveStep({ activeStep, markStepCompleted, stepBack }) {
               return DEPLOYMENT_STEPS[stepLabels[activeStep]]({
                 smallScreen,
                 activeStep,
                 markStepCompleted,
+                stepBack,
               });
             }}
           </BetterStepper>
@@ -410,37 +412,63 @@ Dec 10  01:26:30.830  Request finished with status 200. (execution time: 12245.7
   );
 }
 
-function VerifyStep() {
+function VerifyStep({
+  activeStep,
+  markStepCompleted,
+  stepBack,
+}) {
   return (
-    <>
-      <Typography
-        sx={{
-          fontSize: {
-            xs: '1rem',
-            md: '1.5rem',
-          },
-        }}
-      >
-        Go to <BetterLink href='#' displayText='theexample.com' /> to verify your changes.
-      </Typography>
-      <Typography sx={{ paddingTop: (theme) => theme.spacing(2) }}>Relevant links:</Typography>
-      <Box component='ul' sx={{
-        '& li': {
-          paddingLeft: (theme) => theme.spacing(2),
-          marginLeft: (theme) => theme.spacing(2),
-        }
-      }}>
-        <li>
-          <BetterLink href='#' displayText='Backend server logs' />
-        </li>
-        <li>
-          <BetterLink href='#' displayText='Client-side error monitoring' />
-        </li>
-        <li>
-          <BetterLink href='#' displayText='Application performance dashboard' />
-        </li>
+    <Stack sx={{
+      flex: 1,
+      justifyContent: 'space-between',
+      overflow: 'auto',
+    }}>
+      <Box>
+        <Typography
+          sx={{
+            fontSize: {
+              xs: '1rem',
+              md: '1.5rem',
+            },
+          }}
+        >
+          Go to <BetterLink href='#' displayText='theexample.com' /> to verify your changes.
+        </Typography>
+        <Typography sx={{ paddingTop: (theme) => theme.spacing(2) }}>Relevant links:</Typography>
+        <Box component='ul' sx={{
+          '& li': {
+            paddingLeft: (theme) => theme.spacing(2),
+            marginLeft: (theme) => theme.spacing(2),
+          }
+        }}>
+          <li>
+            <BetterLink href='#' displayText='Backend server logs' />
+          </li>
+          <li>
+            <BetterLink href='#' displayText='Client-side error monitoring' />
+          </li>
+          <li>
+            <BetterLink href='#' displayText='Application performance dashboard' />
+          </li>
+        </Box>
       </Box>
-    </>
+
+      <ModalActions>
+        <Button onClick={stepBack}>
+          Nope
+        </Button>
+        <Box sx={{ flex: '1 1 auto' }} />
+        <Button
+          color='warning'
+          endIcon={<RocketLaunchIcon />}
+          onClick={() => {
+            markStepCompleted(activeStep);
+          }}
+        >
+          LGTM
+        </Button>
+      </ModalActions>
+    </Stack>
   );
 }
 
@@ -450,7 +478,11 @@ function MergeStep() {
 
 interface BetterStepperProps {
   stepLabels: string[];
-  children: (activeStep: number, markStepCompleted: (_: number) => void) => React.ReactNode;
+  children: (props: {
+    activeStep: number;
+    markStepCompleted: (_: number) => void;
+    stepBack: () => void;
+  }) => React.ReactNode;
   vertical?: boolean;
 }
 function BetterStepper({
@@ -464,7 +496,10 @@ function BetterStepper({
   } >({});
   function markStepCompleted(step: number) {
     setCompletedSteps((prev) => ({ ...prev, [step]: true }));
-    setActiveStep((prev) => prev + 1);
+    setActiveStep((currentStep) => Math.min(currentStep + 1, stepLabels.length));
+  }
+  function stepBack() {
+    setActiveStep((currentStep) => Math.max(currentStep - 1, 0));
   }
 
   return (
@@ -542,7 +577,7 @@ function BetterStepper({
             minHeight: 0,
             overflow: 'auto',
           }}>
-            {children(activeStep, markStepCompleted)}
+            {children({ activeStep, markStepCompleted, stepBack })}
           </Stack>
         </Stack>
       </Stack>
