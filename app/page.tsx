@@ -58,7 +58,12 @@ export default function Home() {
       <AppBar withEnvSwitcher tools={[
         <LinkButton href='/deploy-configs'>Configuration</LinkButton>
       ]}>
-        <Stack spacing={10}>
+        <Stack spacing={10} sx={(theme) => ({
+          width: '100%',
+          [theme.breakpoints.up('lg')]: {
+            width: '66%',
+          },
+        })}>
           {/* NOTE(dabrady) Add component filter as we grow. */}
           <EligiblePullRequests
             components={deployableComponents}
