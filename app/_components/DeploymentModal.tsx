@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import {
   Close as CloseIcon,
-  OpenInNew as OpenInNewIcon,
   RocketLaunch as RocketLaunchIcon,
 } from '@mui/icons-material';
 import {
@@ -28,8 +27,8 @@ import { styled, useTheme, SxProps } from '@mui/material/styles';
 
 import { Deployment, DeploymentState } from '@/types';
 import { Chips } from '@/_components/constants';
+import BetterLink from '@/_components/BetterLink';
 import DataTable from '@/_components/DataTable';
-import Link from '@/_components/Link';
 
 const DEPLOYMENT_STEPS: {
   [k: string]: (props: {
@@ -606,57 +605,6 @@ function DanglingConnector() {
         }
       }}
     />
-  );
-}
-
-interface BetterLinkProps {
-  href: string;
-  displayText: string;
-  sx?: SxProps;
-}
-function BetterLink({ href, displayText, sx = [] }: BetterLinkProps) {
-  return (
-    <Link
-      href={href}
-      color='inherit'
-      target='_blank'
-      rel='noopener'
-      sx={[
-        {
-          'a': {
-            color: 'inherit',
-            textDecoration: 'none',
-            '& .MuiLink-root': {
-              transition: '0.125s linear',
-              transitionProperty: 'color, text-decoration-color',
-              textDecoration: 'none',
-              textDecorationColor: 'transparent',
-              '&:hover': {
-                color: (theme) => theme.palette.primary.main,
-                textDecoration: 'underline',
-              },
-            }
-          },
-        },
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-    >
-      {/* Ensure wrapping doesn't separate the icon from the title text. */}
-      {displayText.slice(0, -1)}
-      <Box component='span' sx={{ whiteSpace: 'nowrap' }}>
-        {displayText.slice(-1)}
-        <Box component='sup' sx={{
-          verticalAlign: 'top',
-        }}>
-          <OpenInNewIcon
-            sx={{
-              fontSize: 'max(0.85rem, 50%)',
-              marginLeft: (theme) => theme.spacing(0.2),
-            }}
-          />
-        </Box>
-      </Box>
-    </Link>
   );
 }
 
