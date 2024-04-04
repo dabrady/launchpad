@@ -22,7 +22,7 @@ import useSnackbar from '@/_components/utils/useSnackbar';
 interface Props {
   data: { [k: string]: any };
   serializer?: (v: any) => any;
-  onDataCopy: (copiedValue: string) => void;
+  onDataCopy?: (copiedValue: string) => void;
   sx?: SxProps;
 }
 export default function DataTable({
@@ -69,7 +69,7 @@ export default function DataTable({
                     justifyContent='space-between'
                   >
                     {renderedValue}
-                    <CopyButton
+                    {onDataCopy && <CopyButton
                       value={copyableValue}
                       onCopySuccess={
                         function reportCopy(copiedValue: string) {
@@ -77,7 +77,7 @@ export default function DataTable({
                             && onDataCopy(copiedValue);
                         }
                       }
-                    />
+                    />}
                   </Stack>
                 </TableCell>
               </TableRow>
