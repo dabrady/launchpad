@@ -12,9 +12,10 @@ import {
   Timestamp,
   Unsubscribe,
 } from 'firebase/firestore';
+import { httpsCallable } from "firebase/functions";
 import { useEffect, useRef, useState } from "react";
 
-import { firestore } from '#/firebase';
+import { firestore, functions } from '#/firebase';
 
 import {
   DeployableComponent,
@@ -49,21 +50,11 @@ export async function judgePullRequests(
   pullRequests: RawPullRequest[],
 ): Promise<PromiseSettledResult<PullRequestState>[]> {
   return Promise.allSettled(pullRequests.map((pullRequest) => {
-    var { number, repo } = pullRequest;
-    return fetch(
-      'https://ispullrequestdeployable-em2d3pfjyq-ew.a.run.app',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ number, repo }),
-      },
-    )
-      .then((response) => response.json())
-      .then((deployable) => (
+    var isDeployable = httpsCallable(functions, 'isPullRequestDeployable');
+    return isDeployable(pullRequest)
+      .then(({ data: deployable }) => (
         deployable ? PullRequestState.READY : PullRequestState.NOT_READY
-      )).catch(() => PullRequestState.FETCH_ERROR);
+      )).catch((error) => console.error(error) || PullRequestState.FETCH_ERROR);
   }));
 }
 

@@ -165,27 +165,16 @@ export const handleGitHubWebhooks = onRequest(
 
 /**
  * Given a `pull_request` document, determines whether it is deployable.
- * TODO(dabrady) Convert this to a 'callable function' to prevent external use.
  */
-export const isPullRequestDeployable = onRequest(
-  {
-    // Allow requests from anywhere
-    // TODO(dabrady) Restrict this to our own domain
-    cors: true,
-  },
-  function isDeployable(request, response) {
-    if (request.method == 'OPTIONS') {
-      logger.debug('Skipping OPTIONS requests');
-      return response.status(204).send();
-    }
-
+export const isPullRequestDeployable = onCall(
+  function isDeployable(request) {
     var {
       number,
       repo: {
         owner,
         name,
       },
-    } = request.body;
+    } = request.data;
 
     logger.debug('fetching installation');
     return app.octokit.rest.apps.getRepoInstallation({ owner, repo: name })
@@ -201,9 +190,6 @@ export const isPullRequestDeployable = onRequest(
             name,
           },
         });
-      })
-      .then(function respond(judgment) {
-        return response.json(judgment);
       });
   },
 );
