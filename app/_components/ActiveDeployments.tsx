@@ -27,7 +27,7 @@ import {
 } from '@/types';
 import { Chips } from '@/_components/constants';
 import DeploymentModal from '@/_components/DeploymentModal';
-import Link from '@/_components/Link';
+import BetterLink from '@/_components/BetterLink';
 import { useTargetEnvironment } from '@/_components/TargetEnvironment';
 import { useActiveDeployments } from '@/_components/utils/useDeployments';
 
@@ -54,9 +54,13 @@ const COLUMNS: GridColDef<TDeployment>[] = [
     flex: 2,
     renderCell: function PullRequestLink({ row, value }) {
       return (
-        <Link href={row.pullRequest.url} underline='hover'>
-          <code>{value}</code>
-        </Link>
+        <BetterLink
+          href={row.pullRequest.url}
+          displayText={value}
+          sx={{
+            fontFamily: 'monospace',
+          }}
+        />
       );
     }
   },
