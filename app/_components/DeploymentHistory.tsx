@@ -74,8 +74,8 @@ export default function DeploymentHistory(props: Props) {
           <TableRow>
             <TableCell></TableCell>
             <TableCell>What?</TableCell>
-            <TableCell>When?</TableCell>
             <TableCell>Who?</TableCell>
+            <TableCell>When?</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -91,8 +91,8 @@ export default function DeploymentHistory(props: Props) {
                   {Chips[state]}
                 </TableCell>
                 <TableCell><Link href="#"><code>{displayName}</code></Link></TableCell>
-                <TableCell>{dayjs(date).format('HH:mm:ss @ DD MMM YYYY')}</TableCell>
                 <TableCell>{currentUser.displayName}</TableCell>
+                <TableCell>{dayjs(date).format('HH:mm:ss @ DD MMM YYYY')}</TableCell>
               </TableRow>
             );
           })}
