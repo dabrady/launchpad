@@ -24,6 +24,7 @@ const LIGHT_PALETTE: PaletteOptions = {
   background: {
     default: '#fcfdf6',
     paper: '#fcfdf6',
+    embedded: '#f4f4f4',
   },
   text: {
     primary: '#1a1c18',
@@ -56,6 +57,7 @@ const DARK_PALETTE: PaletteOptions = {
   background: {
     default: '#1a1c18',
     paper: '#1a1c18',
+    embedded: '#1a1c18',
   },
   text: {
     primary: '#e2e3dd',

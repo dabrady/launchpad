@@ -340,7 +340,7 @@ function DeployStep({
         ? <Typography>deploying</Typography>
         : <Box component='pre' sx={{
           height: '100%',
-          background: '#f4f4f4',
+          bgcolor: 'background.embedded',
           border: '1px solid #ddd',
           borderRadius: '6px',
           color: (theme) => theme.palette.text.secondary,
