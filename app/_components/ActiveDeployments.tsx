@@ -1,6 +1,8 @@
 'use client';
 
 import dayjs from 'dayjs';
+import relativeTimePlugin from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTimePlugin);
 
 import {
   Box,
@@ -67,6 +69,16 @@ const COLUMNS: GridColDef<TDeployment>[] = [
     valueGetter: function getOwnerName(params) {
       return params.value.name;
     }
+  },
+  {
+    sortable: false,
+    field: 'updated_at',
+    headerName: 'When?',
+    minWidth: 120,
+    flex: 1,
+    valueGetter: function formatDate(params) {
+      return dayjs(params.value.toDate()).fromNow();
+    },
   },
   {
     sortable: false,
